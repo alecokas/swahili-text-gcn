@@ -7,6 +7,8 @@ import os
 import torch
 from typing import Any, Dict, List
 
+from gnn.utils.global_constants import STOP_WORDS
+
 
 stemmer = PorterStemmer()
 
@@ -27,10 +29,12 @@ def rm_file(file_name: str) -> None:
         pass
 
 
-def tokenize_and_stem(text: str) -> List[str]:
-    """ Use NLTK word tokenisation and Porter stemmer. Also exclude any singe character words """
-    tokens = [word for word in word_tokenize(text) if len(word) > 1]
-    return [stemmer.stem(item) for item in tokens]
+def tokenize_and_prune(text: str) -> List[str]:
+    """
+    Use NLTK word tokenisation and clean our text
+    TODO: Stem the text in a considered manner post tokenization.
+    """
+    return [word for word in word_tokenize(text) if len(word) > 1 and word.isalpha() and word not in STOP_WORDS]
 
 
 def write_list_to_file(list_of_strings: List[str], target_file: str) -> None:

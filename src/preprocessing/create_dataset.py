@@ -58,7 +58,7 @@ def read_and_format_as_df(results_dir: str, data_dir: str) -> pd.DataFrame:
     collated_dict = {'path': [], 'document_content': [], 'document_type': []}
     data_root = os.path.join(data_dir, SUBDIR)
     for path in Path(data_root).rglob('*.shu'):
-        doc_contents = strip_tags(path.read_text()).strip()
+        doc_contents = strip_tags(path.read_text()).strip().lower()
         abs_path = str(path.resolve())
         document_label = _get_document_type(abs_path)
         collated_dict['path'].append(abs_path)

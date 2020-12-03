@@ -4,39 +4,40 @@ import numpy as np
 import os
 import pandas as pd
 
-# from scipy.sparse import csr_matrix
 from scipy.sparse import csr_matrix, hstack, vstack, identity, save_npz
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tqdm import tqdm
 import torch
 from typing import Dict, List, Set, Tuple, Optional
 
-from utils.html_stripper import strip_tags
-from utils.utils import save_dict_to_json, tokenize_and_stem, write_to_meta
+from utils.utils import save_dict_to_json, tokenize_and_prune, write_to_meta
 
 
-def build_graph_from_df(graph_dir: str, df_path: str, text_column: str, window_size: int) -> None:
+def build_graph_from_df(graph_dir: str, df_path: str, text_column: str, label_column: str, window_size: int) -> None:
     if not os.path.isfile(df_path):
         raise FileNotFoundError(
             f'{df_path} could not be found.\
                 Remember that you first need to generate the dataset using the `create_dataset` script'
         )
-    document_list, labels = _load_and_clean(df_path, text_column)
+    document_list, labels = _load_text_and_labels(df_path, text_column, label_column)
     label_to_cat = {label: cat for cat, label in enumerate(set(labels))}
     catagorical_labels = torch.LongTensor([label_to_cat[label] for label in labels])
 
     # Obtain TF-IDF for word-document weights: TODO: strip_accents='unicode'
-    vectoriser = TfidfVectorizer(tokenizer=tokenize_and_stem)
+    print('TF-IDF...')
+    vectoriser = TfidfVectorizer(tokenizer=tokenize_and_prune)
     tf_ids = vectoriser.fit_transform(document_list)
     print(tf_ids.shape)
     token_to_int_vocab_map = vectoriser.vocabulary_
     print(f'There are {len(document_list)} documents in our corpus')
     print(f'Our vocabulary has {len(token_to_int_vocab_map)} words in it')
     print(tf_ids.shape)
+    save_dict_to_json(token_to_int_vocab_map, os.path.join(graph_dir, 'vocab_map.json'))
+
 
     # Obtain word co-occurence statistics (PMI) for word-word weights
+    print('Word Co-ocurrences...')
     windows = _create_window_contexts(document_list, window_size)
-    # write_list_of_lists_to_file(windows, 'tmp.txt')
 
     word_occurence_count_map = _create_word_occurence_count_map(windows)
     word_pair_occurence_count_map = _create_word_pair_occurence_count_map(windows)
@@ -71,18 +72,15 @@ def build_graph_from_df(graph_dir: str, df_path: str, text_column: str, window_s
     save_npz(os.path.join(graph_dir, 'adjacency.npz'), adjacency)
 
 
-def _load_and_clean(df_path: str, text_column: str) -> Tuple[List[List[str]], List[str]]:
+def _load_text_and_labels(df_path: str, text_column: str, label_column: str) -> Tuple[List[List[str]], List[str]]:
     """
-    Load the CSV from file, extract the column we want, and then remove keyword and html tags.
-    Load and retrun the labels for these documents as well.
+    Load the CSV from file, extract the column we want along with the corresponding labels.
     """
     dataset_df = pd.read_csv(df_path, sep=';')
-    cleaned_document_list = [
-        strip_tags(document.replace("ingredients:", "").lower()) for document in dataset_df[text_column].values.tolist()
-    ]
-    labels = dataset_df['label'].values.tolist()
-    assert len(labels) == len(cleaned_document_list), 'The number of labels and cleaned docs should match'
-    return cleaned_document_list, labels
+    document_content = dataset_df[text_column].values.tolist()
+    labels = dataset_df[label_column].values.tolist()
+    assert len(labels) == len(document_content), 'The number of labels and docs should match'
+    return document_content, labels
 
 
 def _create_window_contexts(doc_list: List[str], window_size: int) -> List[Set[str]]:
@@ -92,7 +90,7 @@ def _create_window_contexts(doc_list: List[str], window_size: int) -> List[Set[s
     """
     windows = []
     for doc in doc_list:
-        words = tokenize_and_stem(doc)
+        words = tokenize_and_prune(doc)
         if len(words) <= window_size:
             windows.append(set(words))
         else:
@@ -107,7 +105,6 @@ def _word_cooccurrences(
     word_pair_occurence_count_map: Dict[str, int],
     num_windows: int,
 ) -> List[Tuple[str, str, float]]:
-    # words_list = ['long', 'short', 'life', 'kaci', 'bolls']
     word_cooccurrences_list = []
     for i, word_i in tqdm(enumerate(words_list[:-1]), desc='Creating PMI weights: '):
         for j in range(i + 1, len(words_list)):

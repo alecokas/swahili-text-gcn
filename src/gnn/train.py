@@ -14,8 +14,7 @@ RES_DIR = 'results'
 
 def parse_arguments(args_to_parse):
     """ Parse CLI arguments """
-    descr = 'Train a Text GCN model'
-    parser = argparse.ArgumentParser(description=descr)
+    parser = argparse.ArgumentParser(description='Train a Text GCN model')
 
     general = parser.add_argument_group('General settings')
     general.add_argument('name', type=str, help="The name of the experimental directory - used for saving and loading.")
@@ -93,7 +92,8 @@ def main(args):
         build_graph_from_df(
             graph_dir=graph_dir,
             df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
-            text_column='ingredients',
+            text_column='document_content',
+            label_column='document_type',
             window_size=20,
         )
 
