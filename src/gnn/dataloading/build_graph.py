@@ -34,7 +34,6 @@ def build_graph_from_df(graph_dir: str, df_path: str, text_column: str, label_co
     print(tf_ids.shape)
     save_dict_to_json(token_to_int_vocab_map, os.path.join(graph_dir, 'vocab_map.json'))
 
-
     # Obtain word co-occurence statistics (PMI) for word-word weights
     print('Word Co-ocurrences...')
     windows = _create_window_contexts(document_list, window_size)
