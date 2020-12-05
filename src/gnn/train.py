@@ -27,13 +27,13 @@ def parse_arguments(args_to_parse):
     general.add_argument(
         '--graph-data-dir',
         type=str,
-        required=True,
+        default='graph',
         help="The name of the directory in which we save the processed graph data - such as the adjacency and labels",
     )
     general.add_argument(
         '--train-dir',
         type=str,
-        required=True,
+        default='train',
         help="The name of the subdirectory where we should save training data (losses, metrics, models, etc.)",
     )
 

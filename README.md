@@ -12,15 +12,35 @@ Dataset citation:
 }
 ```
 
-## Running the code
+## Prerequisites
 This project is written in Python (>=3.6.9) and PyTorch. Install the full list of dependencies in your virtual environemnt by running:
 ```code
 pip install -r requirements.txt
 ```
 
-### Download and data pre-processing
+## Download and general data pre-processing
 The `Helsinki Corpus of Swahili 2.0 Not Annotated Version` can be downloaded, preprocessed, and organised into a DataFrame by running the following command:
 
 ```code
-python src/preprocessing/create_dataset.py <RESULTS_DIRECTORY_NAME>
+python src/preprocessing/create_dataset.py <PREPROC_RESULTS_DIRECTORY_NAME>
 ```
+
+TODO:
+[] - Stemming
+
+## Training
+There are a number of models which can be trained via the interface.
+
+### Graph Neural Networks
+In order to train a GNN for the document classification task, we must first build the graph representation of the corpora. This is done automatically on the first run, and thereafter the GNN model simply trains using the graph it sees in the `--grade-data-dir` directory.
+```code
+python src/gnn/train.py <GNN_RESULTS_DIR_NAME> --input-data-dir <PREPROC_RESULTS_DIRECTORY_NAME> --graph-data-dir graph --train-dir train
+```
+
+### Document Embeddings: Doc2vec
+TODO:
+[] - doc2vec as alternative to one-hot vectors for document nodes
+
+### Word Embeddings: FastText
+TODO:
+[] - fasttext as alternative to one-hot vectors for word nodes
