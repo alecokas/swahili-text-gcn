@@ -7,7 +7,7 @@ import os
 import torch
 from typing import Any, Dict, List
 
-from gnn.utils.global_constants import STOP_WORDS
+from utils.global_constants import STOP_WORDS
 
 
 stemmer = PorterStemmer()
