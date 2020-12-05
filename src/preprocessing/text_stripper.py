@@ -20,3 +20,7 @@ def strip_tags(html: str) -> str:
     s = HTMLStripper()
     s.feed(html)
     return s.get_data()
+
+
+def ignore_non_ascii(text: str) -> str:
+    return text.encode('ascii', errors='ignore').decode()
