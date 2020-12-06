@@ -8,7 +8,7 @@ from model.gcn import GCN
 from model.trainer import Trainer
 from utils.utils import mkdir, get_device
 
-
+# TODO: import this from global_constants.py
 RES_DIR = 'results'
 
 

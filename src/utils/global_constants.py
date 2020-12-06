@@ -77,3 +77,6 @@ STOP_WORDS = set(
         "zake",
     ]
 )
+
+RES_DIR = 'results'
+DATA_DIR = 'data'
