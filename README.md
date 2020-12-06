@@ -13,7 +13,7 @@ Dataset citation:
 ```
 
 ## Prerequisites
-This project is written in Python (>=3.6.9) and PyTorch. Install the full list of dependencies in your virtual environemnt by running:
+This project is written in Python 3.6.9. Install the full list of dependencies in your virtual environemnt by running:
 ```code
 pip install -r requirements.txt
 ```
@@ -27,6 +27,7 @@ python src/preprocessing/create_dataset.py <PREPROC_RESULTS_DIRECTORY_NAME>
 
 TODO:
 [] - Stemming
+[] - Consider excluding words which appear less than X times from the graph
 
 ## Training
 There are a number of models which can be trained via the interface.
