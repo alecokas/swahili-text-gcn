@@ -1,8 +1,12 @@
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+import logging
 import os
 import pandas as pd
 import torch
 from typing import List, Tuple
+
+
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 
 def read_and_format_docs(df_path: str, text_column: str) -> List[TaggedDocument]:

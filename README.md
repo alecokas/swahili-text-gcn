@@ -25,12 +25,16 @@ The `Helsinki Corpus of Swahili 2.0 Not Annotated Version` can be downloaded, pr
 python src/create_dataset.py <PREPROC_RESULTS_DIRECTORY_NAME>
 ```
 
-TODO:
+***TODO:**
+```
 [] - Consider excluding words which appear less than X times from the graph
+```
 
 ## Generate Swahili dictionary
-TODO:
+**TODO:**
+```
 [] - Stemming
+```
 
 ## Training
 There are a number of models which can be trained via the interface.
@@ -42,9 +46,14 @@ python src/gnn/train.py <GNN_RESULTS_DIR_NAME> --input-data-dir <PREPROC_RESULTS
 ```
 
 ### Document Embeddings: Doc2vec
-TODO:
+**TODO:**
+```
 [] - doc2vec as alternative to one-hot vectors for document nodes
+[] - Assess & Test the model
+```
 
 ### Word Embeddings: FastText
-TODO:
+**TODO:**
+```
 [] - fasttext as alternative to one-hot vectors for word nodes
+```

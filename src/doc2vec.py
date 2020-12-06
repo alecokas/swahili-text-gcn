@@ -45,12 +45,18 @@ def parse_arguments(args_to_parse):
 def main(args):
     """ Entry point for training a doc2vec model """
     preproc_dir = os.path.join(RES_DIR, args.input_data_dir)
+    results_dir = os.path.join(RES_DIR, args.name)
 
     tagged_docs = read_and_format_docs(df_path=os.path.join(preproc_dir, 'dataset.csv'), text_column='document_content')
     train_docs, val_docs = separate_into_subsets(tagged_docs, preproc_dir)
 
     print('Training doc2vec ...')
-    train(docs=train_docs, feature_dims=args.feature_dims, num_epochs=args.epochs)
+    model = train(docs=train_docs, feature_dims=args.feature_dims, num_epochs=args.epochs)
+
+    print('Saving doc2vec model...')
+    model.save(os.path.join(results_dir, 'doc2vec-model.sav'))
+
+    # TODO: Assess & Test the model
 
 
 if __name__ == '__main__':
