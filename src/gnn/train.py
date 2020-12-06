@@ -3,7 +3,7 @@ import os
 import sys
 
 from dataloading.build_graph import build_graph_from_df
-from dataloading.loaders import load_datasets, create_train_val_split, load_train_val_nodes
+from dataloading.loaders import load_datasets, load_train_val_nodes
 from model.gcn import GCN
 from model.trainer import Trainer
 from utils.utils import mkdir, get_device
@@ -60,23 +60,10 @@ def parse_arguments(args_to_parse):
         '--use-gpu', action='store_true', default=False, help='Set this parameter to run on GPU (cuda)'
     )
     training.add_argument(
-        '--train-ratio',
-        type=float,
-        default=0.8,
-        help="Ratio of the nodes to reserve for training",
-    )
-    training.add_argument(
-        '--val-split-type',
-        choices=['balance_for_all_classes', 'uniform_over_all_data'],
-        default='uniform_over_all_data',
-        type=str,
-        help="Determine how to generate the validation set split if not already saved to disk",
-    )
-    training.add_argument(
         '--train-set-label-proportion',
         type=float,
         default=0.2,
-        help='Ratio of nodes in the training set which we keep labelled'
+        help='Ratio of nodes in the training set which we keep labelled',
     )
     return parser.parse_args(args_to_parse)
 
@@ -100,13 +87,10 @@ def main(args):
     print('Load and normalise...')
     adjacency, input_features, labels = load_datasets(graph_dir)
 
-    train_dir = os.path.join(results_dir, args.train_dir)
-    if not os.path.isdir(train_dir):
-        mkdir(train_dir)
-        create_train_val_split(
-            train_dir=train_dir, node_labels=labels, train_ratio=args.train_ratio, val_split_type=args.val_split_type
-        )
-    train_nodes, val_nodes = load_train_val_nodes(train_dir, args.train_set_label_proportion)
+    train_nodes, val_nodes = load_train_val_nodes(
+        preproc_dir=os.path.join(RES_DIR, args.input_data_dir),
+        train_set_label_proportion=args.train_set_label_proportion,
+    )
 
     # Initialise model, trainer, and train
     text_gcn_model = GCN(
@@ -122,7 +106,7 @@ def main(args):
         device=get_device(args.use_gpu),
         train_nodes=train_nodes,
         val_nodes=val_nodes,
-        results_dir=train_dir,
+        results_dir=os.path.join(results_dir, args.train_dir),
         validate_every_n_epochs=2,
         save_after_n_epochs=0,
         checkpoint_every_n_epochs=2,

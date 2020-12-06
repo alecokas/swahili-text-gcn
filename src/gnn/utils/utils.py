@@ -1,70 +1,7 @@
-import errno
-import json
-import jsonlines
-from nltk import word_tokenize
-from nltk.stem.porter import PorterStemmer
 import os
 import torch
-from typing import Any, Dict, List
 
-from utils.global_constants import STOP_WORDS
-
-
-stemmer = PorterStemmer()
-
-
-def mkdir(directory: str) -> None:
-    """ Make directory if it does not exist """
-    try:
-        os.makedirs(directory)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-
-
-def rm_file(file_name: str) -> None:
-    try:
-        os.remove(file_name)
-    except OSError:
-        pass
-
-
-def tokenize_and_prune(text: str) -> List[str]:
-    """
-    Use NLTK word tokenisation and clean our text
-    TODO: Stem the text in a considered manner post tokenization.
-    """
-    return [word for word in word_tokenize(text) if len(word) > 1 and word.isalpha() and word not in STOP_WORDS]
-
-
-def write_list_to_file(list_of_strings: List[str], target_file: str) -> None:
-    """ Write a list of strings to a target file """
-    with open(target_file, 'w') as tgt_file:
-        tgt_file.write('\n'.join(list_of_strings))
-
-
-def append_to_jsonl(path: str, dict_to_append: Dict[str, Any]):
-    with jsonlines.open(path, mode='a') as writer:
-        writer.write(dict_to_append)
-
-
-def write_to_meta(data_meta_path: str, key_val: Dict[str, Any]) -> None:
-    """ Write the key-value pair to a json meta file """
-    if os.path.isfile(data_meta_path):
-        with open(data_meta_path, 'r') as meta_file:
-            meta_data = json.load(meta_file)
-    else:
-        meta_data = {}
-
-    meta_data.update(key_val)
-
-    with open(data_meta_path, 'w') as meta_file:
-        json.dump(meta_data, meta_file)
-
-
-def save_dict_to_json(dict_map: Dict[str, int], file_path: str):
-    with open(file_path, 'w') as fp:
-        json.dump(dict_map, fp, sort_keys=True, indent=4)
+from utils.utils import rm_file
 
 
 def get_device(use_gpu: bool) -> torch.device:

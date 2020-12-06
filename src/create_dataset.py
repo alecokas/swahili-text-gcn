@@ -3,11 +3,13 @@ import os
 import pandas as pd
 from pathlib import Path
 import sys
+import torch
 import urllib.request
 import zipfile
 
-from text_stripper import strip_tags, ignore_non_ascii
-from utils import mkdir, save_dict_to_json
+from preprocessing.text_stripper import strip_tags, ignore_non_ascii
+from preprocessing.data_split import create_train_val_split
+from utils.utils import mkdir, save_dict_to_json
 
 
 RES_DIR = 'results'
@@ -31,6 +33,19 @@ def parse_arguments(args_to_parse):
         type=str,
         default='labels.json',
         help="JSON file inwhich to save the label name to index mapping",
+    )
+    general.add_argument(
+        '--train-ratio',
+        type=float,
+        default=0.8,
+        help="Ratio of the nodes to reserve for training",
+    )
+    general.add_argument(
+        '--val-split-type',
+        choices=['balance_for_all_classes', 'uniform_over_all_data'],
+        default='uniform_over_all_data',
+        type=str,
+        help="Determine how to generate the validation set split if not already saved to disk",
     )
     return parser.parse_args(args_to_parse)
 
@@ -92,6 +107,14 @@ def main(args):
         dataset_df = read_and_format_as_df(results_dir, data_dir)
         labels_dict = {doc_type: idx for idx, doc_type in enumerate(dataset_df['document_type'].unique().tolist())}
         save_dict_to_json(labels_dict, labels_path)
+
+        catagorical_labels = torch.LongTensor([labels_dict[label] for label in dataset_df['document_type'].tolist()])
+        create_train_val_split(
+            results_dir=results_dir,
+            node_labels=catagorical_labels,
+            train_ratio=args.train_ratio,
+            val_split_type=args.val_split_type,
+        )
         dataset_df.to_csv(dataframe_path, index=False, sep=';')
 
 

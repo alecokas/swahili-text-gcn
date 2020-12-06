@@ -22,12 +22,15 @@ pip install -r requirements.txt
 The `Helsinki Corpus of Swahili 2.0 Not Annotated Version` can be downloaded, preprocessed, and organised into a DataFrame by running the following command:
 
 ```code
-python src/preprocessing/create_dataset.py <PREPROC_RESULTS_DIRECTORY_NAME>
+python src/create_dataset.py <PREPROC_RESULTS_DIRECTORY_NAME>
 ```
 
 TODO:
-[] - Stemming
 [] - Consider excluding words which appear less than X times from the graph
+
+## Generate Swahili dictionary
+TODO:
+[] - Stemming
 
 ## Training
 There are a number of models which can be trained via the interface.
