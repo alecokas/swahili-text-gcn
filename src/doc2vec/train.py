@@ -28,8 +28,13 @@ def separate_into_subsets(
     return train_docs, val_docs
 
 
-def train(docs: List[str], feature_dims: int, num_epochs: int):
+def train(docs: List[str], feature_dims: int, num_epochs: int) -> Doc2Vec:
     model = Doc2Vec(vector_size=feature_dims, window=2, min_count=3, workers=4, epochs=num_epochs)
     model.build_vocab(docs)
     model.train(docs, total_examples=model.corpus_count, epochs=num_epochs)
     return model
+
+
+def save_for_inference(model: Doc2Vec, path_name: str) -> None:
+    model.delete_temporary_training_data(keep_doctags_vectors=True, keep_inference=True)
+    model.save(path_name)

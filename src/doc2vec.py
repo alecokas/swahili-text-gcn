@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 
-from doc2vec.train import read_and_format_docs, separate_into_subsets, train
+from doc2vec.train import read_and_format_docs, separate_into_subsets, train, save_for_inference
 from utils.global_constants import RES_DIR
 
 
@@ -54,7 +54,7 @@ def main(args):
     model = train(docs=train_docs, feature_dims=args.feature_dims, num_epochs=args.epochs)
 
     print('Saving doc2vec model...')
-    model.save(os.path.join(results_dir, 'doc2vec-model.sav'))
+    save_for_inference(model, os.path.join(results_dir, 'doc2vec-model.bin'))
 
     # TODO: Assess & Test the model
 
