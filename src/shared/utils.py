@@ -5,7 +5,7 @@ from nltk import word_tokenize
 import os
 from typing import Any, Dict, List
 
-from utils.global_constants import STOP_WORDS
+from shared.global_constants import STOP_WORDS
 
 
 def mkdir(directory: str) -> None:

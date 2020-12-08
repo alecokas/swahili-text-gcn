@@ -2,11 +2,12 @@ import argparse
 import os
 import sys
 
-from dataloading.build_graph import build_graph_from_df
-from dataloading.loaders import load_datasets, load_train_val_nodes
-from model.gcn import GCN
-from model.trainer import Trainer
-from utils.utils import mkdir, get_device
+from gnn.dataloading.build_graph import build_graph_from_df
+from gnn.dataloading.loaders import load_datasets, load_train_val_nodes
+from gnn.model.gcn import GCN
+from gnn.model.trainer import Trainer
+from gnn.utils.utils import get_device
+from shared.utils import mkdir
 
 # TODO: import this from global_constants.py
 RES_DIR = 'results'

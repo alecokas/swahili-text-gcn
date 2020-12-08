@@ -10,7 +10,7 @@ from tqdm import tqdm
 import torch
 from typing import Dict, List, Set, Tuple, Optional
 
-from utils.utils import save_dict_to_json, tokenize_and_prune, write_to_meta
+from shared.utils import save_dict_to_json, tokenize_and_prune, write_to_meta
 
 
 def build_graph_from_df(graph_dir: str, df_path: str, text_column: str, label_column: str, window_size: int) -> None:
