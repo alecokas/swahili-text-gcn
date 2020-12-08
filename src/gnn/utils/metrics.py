@@ -2,7 +2,7 @@ import torch
 from torch.nn import functional as F
 from typing import Dict
 
-from utils.utils import append_to_jsonl, rm_file
+from shared.utils import append_to_jsonl, rm_file
 
 
 def accuracy(output: torch.FloatTensor, labels: torch.LongTensor, is_logit_output: bool) -> float:

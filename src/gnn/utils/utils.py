@@ -1,7 +1,7 @@
 import os
 import torch
 
-from utils.utils import rm_file
+from shared.utils import rm_file
 
 
 def get_device(use_gpu: bool) -> torch.device:

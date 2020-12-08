@@ -42,7 +42,7 @@ There are a number of models which can be trained via the interface.
 ### Graph Neural Networks
 In order to train a GNN for the document classification task, we must first build the graph representation of the corpora. This is done automatically on the first run, and thereafter the GNN model simply trains using the graph it sees in the `--grade-data-dir` directory.
 ```code
-python src/gnn/train.py <GNN_RESULTS_DIR_NAME> --input-data-dir <PREPROC_RESULTS_DIRECTORY_NAME> --graph-data-dir graph --train-dir train
+python src/train_gnn.py <GNN_RESULTS_DIR_NAME> --input-data-dir <PREPROC_RESULTS_DIRECTORY_NAME> --graph-data-dir graph --train-dir train
 ```
 
 ### Document Embeddings: Doc2vec

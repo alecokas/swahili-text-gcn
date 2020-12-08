@@ -9,8 +9,8 @@ import zipfile
 
 from preprocessing.text_stripper import strip_tags, ignore_non_ascii
 from preprocessing.data_split import create_train_val_split
-from utils.utils import mkdir, save_dict_to_json
-from utils.global_constants import RES_DIR, DATA_DIR
+from shared.utils import mkdir, save_dict_to_json
+from shared.global_constants import RES_DIR, DATA_DIR
 
 
 ROOT_DOWNLOAD_URL = 'https://korp.csc.fi/download/HCS/na-v2'

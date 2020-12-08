@@ -7,8 +7,9 @@ import torch.nn as nn
 from torch.optim import AdamW
 from typing import Any, Dict
 
-from utils.metrics import accuracy, save_metrics
-from utils.utils import mkdir, remove_previous_best
+from gnn.utils.metrics import accuracy, save_metrics
+from gnn.utils.utils import remove_previous_best
+from shared.utils import mkdir
 
 
 class Trainer(object):

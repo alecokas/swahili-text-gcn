@@ -3,7 +3,7 @@ import os
 import sys
 
 from doc2vec.train import read_and_format_docs, separate_into_subsets, train, save_for_inference
-from utils.global_constants import RES_DIR
+from shared.global_constants import RES_DIR
 
 
 def parse_arguments(args_to_parse):
