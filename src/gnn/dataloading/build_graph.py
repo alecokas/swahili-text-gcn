@@ -5,10 +5,11 @@ import os
 import pandas as pd
 
 from scipy.sparse import csr_matrix, hstack, vstack, identity, save_npz
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from tqdm import tqdm
 import torch
 from typing import Dict, List, Set, Tuple, Optional
+from collections import Counter
 
 from shared.utils import save_dict_to_json, tokenize_and_prune, write_to_meta
 
@@ -33,6 +34,17 @@ def build_graph_from_df(graph_dir: str, df_path: str, text_column: str, label_co
     print(f'Our vocabulary has {len(token_to_int_vocab_map)} words in it')
     print(tf_ids.shape)
     save_dict_to_json(token_to_int_vocab_map, os.path.join(graph_dir, 'vocab_map.json'))
+
+    # Create a vocab list sorted by the frequency of each word
+    print('Vocab count...')
+    cv = CountVectorizer(tokenizer=tokenize_and_prune)
+    cv_fit = cv.fit_transform(document_list)
+    word_list = cv.get_feature_names()
+    count_list = cv_fit.toarray().sum(axis=0)
+    word_counts = {word: count for word, count in zip(word_list, count_list)}
+    vocab_sorted = {word: int(count) for word, count in Counter(word_counts).most_common()}
+    save_dict_to_json(vocab_sorted, os.path.join(graph_dir, 'vocab_counts.json'), sort_keys=False)
+    assert len(vocab_sorted) == len(token_to_int_vocab_map), 'Vocab lengths from TfidfVectorizer and CountVectorizer do not match'
 
     # Obtain word co-occurence statistics (PMI) for word-word weights
     print('Word Co-ocurrences...')
@@ -94,15 +106,15 @@ def _create_window_contexts(doc_list: List[str], window_size: int) -> List[Set[s
             windows.append(set(words))
         else:
             for i in range(len(words) - window_size + 1):
-                windows.append(set(words[i : i + window_size]))
+                windows.append(set(words[i: i + window_size]))
     return windows
 
 
 def _word_cooccurrences(
-    words_list: List[str],
-    word_occurence_count_map: Dict[str, int],
-    word_pair_occurence_count_map: Dict[str, int],
-    num_windows: int,
+        words_list: List[str],
+        word_occurence_count_map: Dict[str, int],
+        word_pair_occurence_count_map: Dict[str, int],
+        num_windows: int,
 ) -> List[Tuple[str, str, float]]:
     word_cooccurrences_list = []
     for i, word_i in tqdm(enumerate(words_list[:-1]), desc='Creating PMI weights: '):
@@ -134,7 +146,7 @@ def _create_word_pair_occurence_count_map(windows: List[Set[str]]) -> Dict[str, 
     for window in tqdm(windows, desc='Creating create_word_pair_occurence_count_map: '):
         window_list = list(window)
         for i, word_i in enumerate(window_list[:-1]):
-            for word_j in window_list[i + 1 : len(window_list)]:
+            for word_j in window_list[i + 1: len(window_list)]:
                 if word_i != word_j:
                     word_pair_occurence_count_map[f'{word_i},{word_j}'] += 1
                     word_pair_occurence_count_map[f'{word_j},{word_i}'] += 1
@@ -142,11 +154,11 @@ def _create_word_pair_occurence_count_map(windows: List[Set[str]]) -> Dict[str, 
 
 
 def _pointwise_mi(
-    word_i: str,
-    word_j: str,
-    word_occurence_count_map: Dict[str, int],
-    word_pair_occurence_count_map: Dict[str, int],
-    num_windows: int,
+        word_i: str,
+        word_j: str,
+        word_occurence_count_map: Dict[str, int],
+        word_pair_occurence_count_map: Dict[str, int],
+        num_windows: int,
 ) -> Optional[float]:
     """
     Calculate the pointwise mutual information between words i and j.
@@ -166,7 +178,7 @@ def _pointwise_mi(
 
 
 def _merge_into_adjacency(
-    tf_ids: csr_matrix, word_cooccurrences_list: List[Tuple[str, str, float]], token_to_int_vocab_map: Dict[str, int]
+        tf_ids: csr_matrix, word_cooccurrences_list: List[Tuple[str, str, float]], token_to_int_vocab_map: Dict[str, int]
 ) -> csr_matrix:
     """
     Merge the word co-occurence information together with the tf-idf information to create an adjacency matrix
