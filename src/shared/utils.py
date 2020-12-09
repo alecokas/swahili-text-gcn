@@ -24,9 +24,9 @@ def rm_file(file_name: str) -> None:
         pass
 
 
-def save_dict_to_json(dict_map: Dict[str, int], file_path: str):
+def save_dict_to_json(dict_map: Dict[str, int], file_path: str, sort_keys: bool = True):
     with open(file_path, 'w') as fp:
-        json.dump(dict_map, fp, sort_keys=True, indent=4)
+        json.dump(dict_map, fp, sort_keys=sort_keys, indent=4)
 
 
 def tokenize_and_prune(text: str) -> List[str]:
