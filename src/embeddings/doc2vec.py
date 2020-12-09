@@ -1,5 +1,6 @@
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 import logging
+import numpy as np
 import os
 import pandas as pd
 import torch
@@ -38,3 +39,10 @@ def train(docs: List[str], feature_dims: int, num_epochs: int) -> Doc2Vec:
 def save_for_inference(model: Doc2Vec, path_name: str) -> None:
     model.delete_temporary_training_data(keep_doctags_vectors=True, keep_inference=True)
     model.save(path_name)
+
+
+def infer_document_embeddings(model_path: str, doc_list: List[List[str]]) -> List[np.ndarray]:
+    """ NOTE: Inference is not deterministic therefore representations will vary between calls """
+    model = Doc2Vec.load(model_path)
+    # TODO: concat list elements sos that it is a 2D array
+    return [model.infer_vector(doc) for doc in doc_list]
