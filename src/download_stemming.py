@@ -76,7 +76,7 @@ def add_words(words_to_add: List[str], save_path: str):
         query_word(save_path, word)
 
 
-def extract_stem(text: str):
+def extract_stem(text: str) -> str:
     return text.split("[")[1].split("]")[0]
 
 
