@@ -34,7 +34,7 @@ python src/create_dataset.py <PREPROC_RESULTS_DIRECTORY_NAME>
 **TODO:**
 ```
 [] - Stemming
-python src/download_stemming.py <GNN_RESULTS_DIR_NAME>
+python src/download_stemming.py --number-to-add 1000
 ```
 
 ## Training

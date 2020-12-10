@@ -7,6 +7,7 @@ import jsonlines
 import json
 from tqdm import tqdm
 from bs4 import BeautifulSoup
+from typing import List
 
 from shared.utils import append_to_jsonl
 from shared.global_constants import RES_DIR
@@ -42,19 +43,19 @@ def parse_arguments(args_to_parse):
     return parser.parse_args(args_to_parse)
 
 
-def setup_dir(stemming_dir):
+def setup_dir(stemming_dir: str) -> str:
     os.makedirs(stemming_dir, exist_ok=True)
-    save_path = os.path.join(stemming_dir, "stemming_results.json")
+    save_path = os.path.join(stemming_dir, "stemming_results.jsonl")
     return save_path
 
 
-def load_vocab_counts(vocab_counts_path):
+def load_vocab_counts(vocab_counts_path: str) -> dict:
     with open(vocab_counts_path, "r") as f:
         vocab_count = json.load(f)
     return vocab_count
 
 
-def get_done_words(save_path):
+def get_done_words(save_path: str) -> set:
     done_words = set()
     if os.path.exists(save_path):
         with jsonlines.open(save_path) as reader:
@@ -63,23 +64,23 @@ def get_done_words(save_path):
     return done_words
 
 
-def get_words_to_add(vocab_count, done_words, number_to_add):
+def get_words_to_add(vocab_count: dict, done_words: set, number_to_add: int) -> List[str]:
     words_to_add = [word for word in vocab_count.keys() if word not in done_words][
         :number_to_add
     ]
     return words_to_add
 
 
-def add_words(words_to_add, save_path):
+def add_words(words_to_add: List[str], save_path: str):
     for word in tqdm(words_to_add):
         query_word(save_path, word)
 
 
-def extract_stem(text):
+def extract_stem(text: str):
     return text.split("[")[1].split("]")[0]
 
 
-def query_word(save_path, word):
+def query_word(save_path: str, word: str) -> None:
     query_data = {}
     query_data["word"] = word
     try:
