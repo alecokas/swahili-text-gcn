@@ -97,7 +97,7 @@ def query_word(save_path: str, word: str) -> None:
             query_data["stem"] = extract_stem(box.text)
         query_data["status"] = 1
     except Exception as exception:
-        query_data["exception"] = 0
+        query_data["exception"] = exception
         query_data["status"] = 0
     append_to_jsonl(save_path, query_data)
 
