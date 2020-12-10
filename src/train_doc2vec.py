@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 
-from doc2vec.train import read_and_format_docs, separate_into_subsets, train, save_for_inference
+from embeddings.doc2vec import read_and_format_docs, separate_into_subsets, train, save_for_inference
 from shared.global_constants import RES_DIR
 
 
