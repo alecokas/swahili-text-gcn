@@ -25,6 +25,13 @@ def parse_arguments(args_to_parse):
     general = parser.add_argument_group('General settings')
     general.add_argument('name', type=str, help="The name of the results directory - used for saving and loading.")
     general.add_argument(
+        '--dataset_name',
+        type=str,
+        default='hcs',
+        choose=['hcs', 'hf-news']
+        help="Select which raw dataset to use: Helsinki Swahili Corpus or Huggingface Swahili News",
+    )
+    general.add_argument(
         '--output-dataset', type=str, default='dataset.csv', help="The name of the final processed dataset"
     )
     general.add_argument(
@@ -49,7 +56,20 @@ def parse_arguments(args_to_parse):
     return parser.parse_args(args_to_parse)
 
 
-def download_raw_data(download_location: str) -> None:
+def download_raw_data(download_location: str, dataset: str) -> None:
+    if dataset == 'hsc':
+        download_hsc_data(download_location)
+    elif dataset == 'hf-news':
+        download_hf_news_data(download_location)
+    else:
+        raise Exception(f'Received dataset name {dataset}. Expected either hsc or hf-news')
+
+
+def download_hf_news_data(download_location: str) -> None:
+    pass
+
+
+def download_hsc_data(download_location: str) -> None:
     """
     Download and extract the Helsinki Swahili Corpus. There are two relevant files to download:
     https://korp.csc.fi/download/HCS/na-v2/hcs-na-v2.zip
@@ -95,7 +115,7 @@ def main(args):
     results_dir = os.path.join(RES_DIR, args.name)
     mkdir(results_dir)
 
-    download_raw_data(download_location=data_dir)
+    download_raw_data(download_location=data_dir, dataset=args.dataset_name.lower())
 
     # Get the dataset and labels into a DataFrame and json file respectively
     labels_path = os.path.join(results_dir, args.output_json_labels)
