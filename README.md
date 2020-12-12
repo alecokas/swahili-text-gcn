@@ -25,7 +25,7 @@ The `Helsinki Corpus of Swahili 2.0 Not Annotated Version` can be downloaded, pr
 python src/create_dataset.py <PREPROC_RESULTS_DIRECTORY_NAME>
 ```
 
-***TODO:**
+**TODO:**
 ```
 [] - Consider excluding words which appear less than X times from the graph
 ```
@@ -34,6 +34,7 @@ python src/create_dataset.py <PREPROC_RESULTS_DIRECTORY_NAME>
 **TODO:**
 ```
 [] - Stemming
+python src/download_stemming.py --number-to-add 1000
 ```
 
 ## Training
