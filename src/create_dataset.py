@@ -25,11 +25,11 @@ def parse_arguments(args_to_parse):
     general = parser.add_argument_group('General settings')
     general.add_argument('name', type=str, help="The name of the results directory - used for saving and loading.")
     general.add_argument(
-        '--dataset_name',
+        '--dataset-name',
         type=str,
-        default='hcs',
-        choose=['hcs', 'hf-news']
-        help="Select which raw dataset to use: Helsinki Swahili Corpus or Huggingface Swahili News",
+        default='hsc',
+        choices=['hsc', 'z-news'],
+        help="Select which raw dataset to use: Helsinki Swahili Corpus or Zenodo Swahili News",
     )
     general.add_argument(
         '--output-dataset', type=str, default='dataset.csv', help="The name of the final processed dataset"
@@ -56,25 +56,36 @@ def parse_arguments(args_to_parse):
     return parser.parse_args(args_to_parse)
 
 
-def download_raw_data(download_location: str, dataset: str) -> None:
+def download_raw_data(download_location: str, dataset: str) -> str:
     if dataset == 'hsc':
-        download_hsc_data(download_location)
-    elif dataset == 'hf-news':
-        download_hf_news_data(download_location)
+        return download_hsc_data(data_dir=download_location)
+    elif dataset == 'z-news':
+        return download_zenodo_news_data(data_dir=download_location)
     else:
-        raise Exception(f'Received dataset name {dataset}. Expected either hsc or hf-news')
+        raise Exception(f'Received dataset name {dataset}. Expected either hsc or z-news')
 
 
-def download_hf_news_data(download_location: str) -> None:
-    pass
+def download_zenodo_news_data(data_dir: str) -> str:
+    """ Download the publically available training data for the 6 class swahili document classification task """
+    download_location = os.path.join(data_dir, 'zenodo-swahili-news-train-corpus')
+
+    if os.path.isdir(download_location):
+        print(f'Skipping download: {download_location} already exists')
+    else:
+        mkdir(download_location)
+        file_url = "https://zenodo.org/record/4300294/files/train.csv?download=1"
+        urllib.request.urlretrieve(file_url, os.path.join(download_location, 'zenodo-swahili-news-train.csv'))
+    return download_location
 
 
-def download_hsc_data(download_location: str) -> None:
+def download_hsc_data(data_dir: str) -> str:
     """
     Download and extract the Helsinki Swahili Corpus. There are two relevant files to download:
     https://korp.csc.fi/download/HCS/na-v2/hcs-na-v2.zip
     https://korp.csc.fi/download/HCS/na-v2/hcs-na-v2.zip.md5
     """
+    download_location = os.path.join(data_dir, 'helsinki-swahili-corpus-v2-unannotated')
+
     if os.path.isdir(download_location):
         print(f'Skipping download: {download_location} already exists')
     else:
@@ -85,6 +96,7 @@ def download_hsc_data(download_location: str) -> None:
 
         with zipfile.ZipFile(os.path.join(download_location, f'{SUBDIR}.zip'), "r") as zipfd:
             zipfd.extractall(download_location)
+    return download_location
 
 
 def read_and_format_as_df(results_dir: str, data_dir: str) -> pd.DataFrame:
@@ -111,11 +123,10 @@ def _get_document_type(abs_path: str) -> str:
 
 def main(args):
     """ Primary entry point for data pre-processing """
-    data_dir = os.path.join(DATA_DIR, 'helsinki-swahili-corpus-v2-unannotated')
     results_dir = os.path.join(RES_DIR, args.name)
     mkdir(results_dir)
 
-    download_raw_data(download_location=data_dir, dataset=args.dataset_name.lower())
+    data_dir = download_raw_data(download_location=DATA_DIR, dataset=args.dataset_name.lower())
 
     # Get the dataset and labels into a DataFrame and json file respectively
     labels_path = os.path.join(results_dir, args.output_json_labels)
