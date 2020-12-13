@@ -3,29 +3,36 @@ from math import log
 import numpy as np
 import os
 import pandas as pd
-
 from scipy.sparse import csr_matrix, hstack, vstack, identity, save_npz
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tqdm import tqdm
 import torch
 from typing import Dict, List, Set, Tuple, Optional
 
-from shared.utils import save_dict_to_json, tokenize_and_prune, write_to_meta
+from shared.utils import save_dict_to_json, read_json_as_dict, tokenize_prune_stem, write_to_meta
 
 
-def build_graph_from_df(graph_dir: str, df_path: str, text_column: str, label_column: str, window_size: int) -> None:
+def build_graph_from_df(
+    graph_dir: str, df_path: str, stemming_map_path: str, text_column: str, label_column: str, window_size: int
+) -> None:
     if not os.path.isfile(df_path):
         raise FileNotFoundError(
             f'{df_path} could not be found.\
                 Remember that you first need to generate the dataset using the `create_dataset` script'
         )
+    if not os.path.isfile(stemming_map_path):
+        raise FileNotFoundError(
+            f'{stemming_map_path} could not be found.\
+                Remember that you need to first generate a stemming map using the `download_stemming` script'
+        )
+    stemming_map = read_json_as_dict(stemming_map_path)
     document_list, labels = _load_text_and_labels(df_path, text_column, label_column)
     label_to_cat = {label: cat for cat, label in enumerate(set(labels))}
     catagorical_labels = torch.LongTensor([label_to_cat[label] for label in labels])
 
     # Obtain TF-IDF for word-document weights: TODO: strip_accents='unicode'
     print('TF-IDF...')
-    vectoriser = TfidfVectorizer(tokenizer=tokenize_and_prune)
+    vectoriser = TfidfVectorizer(tokenizer=lambda text: tokenize_prune_stem(text, stemming_map=stemming_map))
     tf_ids = vectoriser.fit_transform(document_list)
     print(tf_ids.shape)
     token_to_int_vocab_map = vectoriser.vocabulary_
@@ -82,27 +89,27 @@ def _load_text_and_labels(df_path: str, text_column: str, label_column: str) -> 
     return document_content, labels
 
 
-def _create_window_contexts(doc_list: List[str], window_size: int) -> List[Set[str]]:
+def _create_window_contexts(doc_list: List[str], window_size: int, stemming_map: Dict[str, str]) -> List[Set[str]]:
     """
     NOTE: not all windows will be the same size.
     Specifically windows taken from documents which are shorter than the window size.
     """
     windows = []
     for doc in doc_list:
-        words = tokenize_and_prune(doc)
+        words = tokenize_prune_stem(doc, stemming_map=stemming_map)
         if len(words) <= window_size:
             windows.append(set(words))
         else:
             for i in range(len(words) - window_size + 1):
-                windows.append(set(words[i: i + window_size]))
+                windows.append(set(words[i : i + window_size]))
     return windows
 
 
 def _word_cooccurrences(
-        words_list: List[str],
-        word_occurence_count_map: Dict[str, int],
-        word_pair_occurence_count_map: Dict[str, int],
-        num_windows: int,
+    words_list: List[str],
+    word_occurence_count_map: Dict[str, int],
+    word_pair_occurence_count_map: Dict[str, int],
+    num_windows: int,
 ) -> List[Tuple[str, str, float]]:
     word_cooccurrences_list = []
     for i, word_i in tqdm(enumerate(words_list[:-1]), desc='Creating PMI weights: '):
@@ -134,7 +141,7 @@ def _create_word_pair_occurence_count_map(windows: List[Set[str]]) -> Dict[str, 
     for window in tqdm(windows, desc='Creating create_word_pair_occurence_count_map: '):
         window_list = list(window)
         for i, word_i in enumerate(window_list[:-1]):
-            for word_j in window_list[i + 1: len(window_list)]:
+            for word_j in window_list[i + 1 : len(window_list)]:
                 if word_i != word_j:
                     word_pair_occurence_count_map[f'{word_i},{word_j}'] += 1
                     word_pair_occurence_count_map[f'{word_j},{word_i}'] += 1
@@ -142,11 +149,11 @@ def _create_word_pair_occurence_count_map(windows: List[Set[str]]) -> Dict[str, 
 
 
 def _pointwise_mi(
-        word_i: str,
-        word_j: str,
-        word_occurence_count_map: Dict[str, int],
-        word_pair_occurence_count_map: Dict[str, int],
-        num_windows: int,
+    word_i: str,
+    word_j: str,
+    word_occurence_count_map: Dict[str, int],
+    word_pair_occurence_count_map: Dict[str, int],
+    num_windows: int,
 ) -> Optional[float]:
     """
     Calculate the pointwise mutual information between words i and j.
@@ -166,7 +173,7 @@ def _pointwise_mi(
 
 
 def _merge_into_adjacency(
-        tf_ids: csr_matrix, word_cooccurrences_list: List[Tuple[str, str, float]], token_to_int_vocab_map: Dict[str, int]
+    tf_ids: csr_matrix, word_cooccurrences_list: List[Tuple[str, str, float]], token_to_int_vocab_map: Dict[str, int]
 ) -> csr_matrix:
     """
     Merge the word co-occurence information together with the tf-idf information to create an adjacency matrix
