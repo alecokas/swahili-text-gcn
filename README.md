@@ -19,11 +19,12 @@ pip install -r requirements.txt
 ```
 
 ## Download and general data pre-processing
-The `Helsinki Corpus of Swahili 2.0 Not Annotated Version` can be downloaded, preprocessed, and organised into a DataFrame by running the following command:
+The raw dataset can be downloaded, preprocessed, and organised into a DataFrame by running the following command:
 
 ```code
 python src/create_dataset.py <PREPROC_RESULTS_DIRECTORY_NAME>
 ```
+This script is set up to handle the `Helsinki Corpus of Swahili 2.0 Not Annotated Version` and the Zenodo `Swahili : News Classification Dataset`. You which dataset to process using the `--dataset-name` CLI option.
 
 **TODO:**
 ```

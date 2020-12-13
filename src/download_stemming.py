@@ -13,7 +13,7 @@ from collections import Counter
 
 from shared.utils import append_to_jsonl
 from shared.global_constants import RES_DIR
-from shared.utils import save_dict_to_json, tokenize_and_prune, write_to_meta
+from shared.utils import save_dict_to_json, tokenize_and_prune
 from gnn.dataloading.build_graph import _load_text_and_labels
 
 
