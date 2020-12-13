@@ -98,7 +98,7 @@ def get_done_words(save_path: str) -> set:
 
 def get_words_to_add(vocab_counts: dict, done_words: set, number_to_add: int, count_threshold: int) -> List[str]:
     words_above_threshold = [word for word, count in vocab_counts.items() if count >= count_threshold]
-    words_to_add = [word for word in vocab_counts.keys() if word not in done_words][:number_to_add]
+    words_to_add = [word for word in words_above_threshold if word not in done_words][:number_to_add]
     return words_above_threshold, words_to_add
 
 
@@ -131,8 +131,9 @@ def query_word(save_path: str, word: str) -> None:
             query_data["stem"] = extract_stem(box.text)
         query_data["status"] = 1
     except Exception as exception:
-        query_data["exception"] = exception
+        query_data["exception"] = str(exception)
         query_data["status"] = 0
+        print(f'Exception of type {str(exception)} for word {word}')
     append_to_jsonl(save_path, query_data)
 
 
