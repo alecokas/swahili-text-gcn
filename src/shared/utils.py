@@ -48,6 +48,14 @@ def append_to_jsonl(path: str, dict_to_append: Dict[str, Any]):
         writer.write(dict_to_append)
 
 
+def read_jsonl(path: str) -> List[Dict[str, Any]]:
+    json_list = []
+    with jsonlines.open(path) as reader:
+        for json_obj in reader:
+            json_list.append(json_obj)
+    return json_list
+
+
 def write_to_meta(data_meta_path: str, key_val: Dict[str, Any]) -> None:
     """ Write the key-value pair to a json meta file """
     if os.path.isfile(data_meta_path):
