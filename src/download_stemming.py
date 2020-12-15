@@ -89,10 +89,10 @@ def load_vocab_counts(vocab_counts_path: str) -> dict:
     return vocab_counts
 
 
-def get_done_words(save_path: str) -> set:
+def get_done_words(stemming_download_path: str) -> set:
     done_words = set()
-    if os.path.exists(save_path):
-        with jsonlines.open(save_path) as reader:
+    if os.path.exists(stemming_download_path):
+        with jsonlines.open(stemming_download_path) as reader:
             for obj in reader:
                 done_words.add(obj["word"])
     return done_words
@@ -104,19 +104,19 @@ def get_words_to_add(vocab_counts: dict, done_words: set, number_to_add: int, co
     return words_above_threshold, words_to_add
 
 
-def add_words(words_to_add: List[str], save_path: str) -> None:
+def add_words(words_to_add: List[str], stemming_download_path: str) -> None:
     if len(words_to_add) == 0:
         print("All stemming data downloaded")
         return
     for word in tqdm(words_to_add):
-        query_word(save_path, word)
+        query_word(stemming_download_path, word)
 
 
 def extract_stem(text: str) -> str:
     return text.split("[")[1].split("]")[0]
 
 
-def query_word(save_path: str, word: str) -> None:
+def query_word(stemming_download_path: str, word: str) -> None:
     query_data = {}
     query_data["word"] = word
     try:
@@ -136,7 +136,7 @@ def query_word(save_path: str, word: str) -> None:
         query_data["exception"] = str(exception)
         query_data["status"] = 0
         print(f"Exception of type {str(exception)} for word {word}")
-    append_to_jsonl(save_path, query_data)
+    append_to_jsonl(stemming_download_path, query_data)
 
 
 def main(args):
