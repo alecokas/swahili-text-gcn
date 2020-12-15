@@ -15,6 +15,7 @@ from shared.utils import append_to_jsonl
 from shared.global_constants import RES_DIR
 from shared.utils import save_dict_to_json, tokenize_and_prune
 from gnn.dataloading.build_graph import _load_text_and_labels
+from preprocessing.stemming import create_stemming_map
 
 
 def parse_arguments(args_to_parse):
@@ -56,8 +57,9 @@ def parse_arguments(args_to_parse):
 
 def setup_dir(stemming_dir: str) -> str:
     os.makedirs(stemming_dir, exist_ok=True)
-    save_path = os.path.join(stemming_dir, "stemming_results.jsonl")
-    return save_path
+    stemming_download_path = os.path.join(stemming_dir, "stemming_results.jsonl")
+    stemming_cleaned_path = os.path.join(stemming_dir, "stemming_cleaned.jsonl")
+    return stemming_download_path, stemming_cleaned_path
 
 
 def create_vocab_counts(
@@ -133,7 +135,7 @@ def query_word(save_path: str, word: str) -> None:
     except Exception as exception:
         query_data["exception"] = str(exception)
         query_data["status"] = 0
-        print(f'Exception of type {str(exception)} for word {word}')
+        print(f"Exception of type {str(exception)} for word {word}")
     append_to_jsonl(save_path, query_data)
 
 
@@ -146,20 +148,22 @@ def main(args):
     df_path = os.path.join(RES_DIR, args.input_data_dir, "dataset.csv")
 
     os.makedirs(results_dir, exist_ok=True)
-    save_path = setup_dir(stemming_dir)
+    stemming_download_path, stemming_cleaned_path = setup_dir(stemming_dir)
 
     if not os.path.isfile(vocab_counts_path):
         create_vocab_counts(df_path, vocab_counts_path)
 
     vocab_counts = load_vocab_counts(vocab_counts_path)
 
-    done_words = get_done_words(save_path)
+    done_words = get_done_words(stemming_download_path)
 
     words_above_threshold, words_to_add = get_words_to_add(vocab_counts, done_words, number_to_add, count_threshold)
 
-    print(f"{len(done_words)} words done out of {len(words_above_threshold)} words in vocab above count threshold")
-
-    add_words(words_to_add, save_path)
+    if len(words_to_add) > 0:
+        print(f"{len(done_words)} words done out of {len(words_above_threshold)} words in vocab above count threshold")
+        add_words(words_to_add, stemming_download_path)
+    else:
+        create_stemming_map(stemming_download_path, stemming_cleaned_path)
 
 
 if __name__ == "__main__":
