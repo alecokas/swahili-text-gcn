@@ -37,12 +37,12 @@ def read_json_as_dict(path: str) -> Dict[str, Any]:
 def tokenize_prune_stem(text: str, stemming_map: Optional[Dict[str, str]] = None) -> List[str]:
     """
     Use NLTK word tokenisation and clean our text, and (if passed to the function) use stemming map to stem all words.
-    NOTE: If `word` is not in `stemming_map`, we default to simply returning the `word` unstemmed.
+    NOTE: If `word` is not in `stemming_map`, we do not include it
     """
     return [
-        stemming_map.get(word, word) if stemming_map is not None else word
+        stemming_map[word] if stemming_map is not None else word
         for word in word_tokenize(text)
-        if len(word) > 1 and word.isalpha() and word not in STOP_WORDS
+        if len(word) > 1 and word.isalpha() and word not in STOP_WORDS and word in stemming_map
     ]
 
 
