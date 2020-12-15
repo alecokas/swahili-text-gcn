@@ -58,7 +58,7 @@ def parse_arguments(args_to_parse):
 def setup_dir(stemming_dir: str) -> str:
     os.makedirs(stemming_dir, exist_ok=True)
     stemming_download_path = os.path.join(stemming_dir, "stemming_results.jsonl")
-    stemming_cleaned_path = os.path.join(stemming_dir, "stemming_cleaned.jsonl")
+    stemming_cleaned_path = os.path.join(stemming_dir, "stemming_cleaned.json")
     return stemming_download_path, stemming_cleaned_path
 
 
