@@ -15,6 +15,7 @@ from shared.utils import append_to_jsonl
 from shared.global_constants import RES_DIR
 from shared.utils import save_dict_to_json, tokenize_and_prune
 from gnn.dataloading.build_graph import _load_text_and_labels
+from preprocessing.stemming import create_stemming_map
 
 
 def parse_arguments(args_to_parse):
@@ -56,8 +57,9 @@ def parse_arguments(args_to_parse):
 
 def setup_dir(stemming_dir: str) -> str:
     os.makedirs(stemming_dir, exist_ok=True)
-    save_path = os.path.join(stemming_dir, "stemming_results.jsonl")
-    return save_path
+    stemming_download_path = os.path.join(stemming_dir, "stemming_results.jsonl")
+    stemming_cleaned_path = os.path.join(stemming_dir, "stemming_cleaned.json")
+    return stemming_download_path, stemming_cleaned_path
 
 
 def create_vocab_counts(
@@ -87,10 +89,10 @@ def load_vocab_counts(vocab_counts_path: str) -> dict:
     return vocab_counts
 
 
-def get_done_words(save_path: str) -> set:
+def get_done_words(stemming_download_path: str) -> set:
     done_words = set()
-    if os.path.exists(save_path):
-        with jsonlines.open(save_path) as reader:
+    if os.path.exists(stemming_download_path):
+        with jsonlines.open(stemming_download_path) as reader:
             for obj in reader:
                 done_words.add(obj["word"])
     return done_words
@@ -102,19 +104,19 @@ def get_words_to_add(vocab_counts: dict, done_words: set, number_to_add: int, co
     return words_above_threshold, words_to_add
 
 
-def add_words(words_to_add: List[str], save_path: str) -> None:
+def add_words(words_to_add: List[str], stemming_download_path: str) -> None:
     if len(words_to_add) == 0:
         print("All stemming data downloaded")
         return
     for word in tqdm(words_to_add):
-        query_word(save_path, word)
+        query_word(stemming_download_path, word)
 
 
 def extract_stem(text: str) -> str:
     return text.split("[")[1].split("]")[0]
 
 
-def query_word(save_path: str, word: str) -> None:
+def query_word(stemming_download_path: str, word: str) -> None:
     query_data = {}
     query_data["word"] = word
     try:
@@ -133,8 +135,8 @@ def query_word(save_path: str, word: str) -> None:
     except Exception as exception:
         query_data["exception"] = str(exception)
         query_data["status"] = 0
-        print(f'Exception of type {str(exception)} for word {word}')
-    append_to_jsonl(save_path, query_data)
+        print(f"Exception of type {str(exception)} for word {word}")
+    append_to_jsonl(stemming_download_path, query_data)
 
 
 def main(args):
@@ -146,20 +148,22 @@ def main(args):
     df_path = os.path.join(RES_DIR, args.input_data_dir, "dataset.csv")
 
     os.makedirs(results_dir, exist_ok=True)
-    save_path = setup_dir(stemming_dir)
+    stemming_download_path, stemming_cleaned_path = setup_dir(stemming_dir)
 
     if not os.path.isfile(vocab_counts_path):
         create_vocab_counts(df_path, vocab_counts_path)
 
     vocab_counts = load_vocab_counts(vocab_counts_path)
 
-    done_words = get_done_words(save_path)
+    done_words = get_done_words(stemming_download_path)
 
     words_above_threshold, words_to_add = get_words_to_add(vocab_counts, done_words, number_to_add, count_threshold)
 
-    print(f"{len(done_words)} words done out of {len(words_above_threshold)} words in vocab above count threshold")
-
-    add_words(words_to_add, save_path)
+    if len(words_to_add) > 0:
+        print(f"{len(done_words)} words done out of {len(words_above_threshold)} words in vocab above count threshold")
+        add_words(words_to_add, stemming_download_path)
+    else:
+        create_stemming_map(stemming_download_path, stemming_cleaned_path)
 
 
 if __name__ == "__main__":
