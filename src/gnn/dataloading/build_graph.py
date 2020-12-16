@@ -27,8 +27,7 @@ def build_graph_from_df(
         )
     stemming_map = read_json_as_dict(stemming_map_path)
     document_list, labels = _load_text_and_labels(df_path, text_column, label_column)
-    label_to_cat = {label: cat for cat, label in enumerate(set(labels))}
-    catagorical_labels = torch.LongTensor([label_to_cat[label] for label in labels])
+    _save_categorical_labels(graph_dir, labels)
 
     # Obtain TF-IDF for word-document weights: TODO: strip_accents='unicode'
     print('TF-IDF...')
@@ -43,23 +42,34 @@ def build_graph_from_df(
 
     # Obtain word co-occurence statistics (PMI) for word-word weights
     print('Word Co-ocurrences...')
-    windows = _create_window_contexts(document_list, window_size)
-
+    windows = []
+    for document in tqdm(document_list, desc='Generating all windows: '):
+        windows.extend(_create_window_contexts(document, window_size, stemming_map_path))
     word_occurence_count_map = _create_word_occurence_count_map(windows)
     word_pair_occurence_count_map = _create_word_pair_occurence_count_map(windows)
+
+    # Save the number of windows and delete the list to save RAM
+    num_windows = len(windows)
+    del windows
 
     word_cooccurrences_list = _word_cooccurrences(
         words_list=list(token_to_int_vocab_map.keys()),
         word_occurence_count_map=word_occurence_count_map,
         word_pair_occurence_count_map=word_pair_occurence_count_map,
-        num_windows=len(windows),
+        num_windows=num_windows,
     )
     print(f'There are {len(word_cooccurrences_list)} word-word co-occurence weights')
 
     adjacency = _merge_into_adjacency(tf_ids, word_cooccurrences_list, token_to_int_vocab_map)
-    print(f'The adjacency has size: {adjacency.shape}')
+    save_npz(os.path.join(graph_dir, 'adjacency.npz'), adjacency)
 
-    input_features = torch.eye(adjacency.shape[0]).to_sparse()
+    # Store adjacency shape and delete adjacency to save RAM
+    adjacency_shape = adjacency.shape
+    print(f'The adjacency has size: {adjacency_shape}')
+    del adjacency
+
+    input_features = torch.eye(adjacency_shape[0]).to_sparse()
+    torch.save(input_features, os.path.join(graph_dir, 'input_features.pt'))
     print(f'Input features size: {input_features.shape}')
 
     # Save graph, labels, and meta-data to disk
@@ -68,14 +78,9 @@ def build_graph_from_df(
         key_val={
             'vocab_size': len(token_to_int_vocab_map),
             'num_docs': len(document_list),
-            'num_wondows': len(windows),
+            'num_wondows': len(num_windows),
         },
     )
-    save_dict_to_json(label_to_cat, os.path.join(graph_dir, 'label_map.json'))
-    save_dict_to_json(token_to_int_vocab_map, os.path.join(graph_dir, 'vocab_map.json'))
-    torch.save(catagorical_labels, os.path.join(graph_dir, 'labels.pt'))
-    torch.save(input_features, os.path.join(graph_dir, 'input_features.pt'))
-    save_npz(os.path.join(graph_dir, 'adjacency.npz'), adjacency)
 
 
 def _load_text_and_labels(df_path: str, text_column: str, label_column: str) -> Tuple[List[List[str]], List[str]]:
@@ -87,6 +92,13 @@ def _load_text_and_labels(df_path: str, text_column: str, label_column: str) -> 
     labels = dataset_df[label_column].values.tolist()
     assert len(labels) == len(document_content), 'The number of labels and docs should match'
     return document_content, labels
+
+
+def _save_categorical_labels(graph_dir: str, labels: List[str]) -> None:
+    label_to_cat = {label: cat for cat, label in enumerate(set(labels))}
+    catagorical_labels = torch.LongTensor([label_to_cat[label] for label in labels])
+    save_dict_to_json(label_to_cat, os.path.join(graph_dir, 'label_map.json'))
+    torch.save(catagorical_labels, os.path.join(graph_dir, 'labels.pt'))
 
 
 def _create_window_contexts(doc_list: List[str], window_size: int, stemming_map: Dict[str, str]) -> List[Set[str]]:
