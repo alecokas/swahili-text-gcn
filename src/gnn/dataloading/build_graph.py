@@ -78,7 +78,7 @@ def build_graph_from_df(
         key_val={
             'vocab_size': len(token_to_int_vocab_map),
             'num_docs': len(document_list),
-            'num_wondows': len(num_windows),
+            'num_wondows': num_windows,
         },
     )
 
