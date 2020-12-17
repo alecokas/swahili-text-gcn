@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import os
 import pandas as pd
 from pathlib import Path
@@ -130,7 +131,8 @@ def _read_and_format_zenodo_news_as_df(data_dir: str) -> pd.DataFrame:
     path = os.path.join(data_dir, 'zenodo-swahili-news-train.csv')
     df = pd.read_csv(path).rename(columns={"id": "id/path", "content": "document_content", "category": "document_type"})
     df['document_content'] = df['document_content'].apply(clean)
-    return df
+    df.replace('', np.nan, inplace=True)
+    return df.dropna()
 
 
 def _get_document_type(abs_path: str) -> str:
