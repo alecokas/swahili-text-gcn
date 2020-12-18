@@ -46,6 +46,15 @@ def tokenize_prune_stem(text: str, stemming_map: Optional[Dict[str, str]] = None
     ]
 
 
+def tokenize_prune(text: str) -> List[str]:
+    """ Use NLTK word tokenisation and clean our text """
+    return [
+        word
+        for word in word_tokenize(text)
+        if len(word) > 1 and word.isalpha() and word not in STOP_WORDS
+    ]
+
+
 def write_list_to_file(list_of_strings: List[str], target_file: str) -> None:
     """ Write a list of strings to a target file """
     with open(target_file, 'w') as tgt_file:
