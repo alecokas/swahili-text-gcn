@@ -3,7 +3,7 @@ import json
 import jsonlines
 from nltk import word_tokenize
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from shared.global_constants import STOP_WORDS
 
@@ -29,12 +29,30 @@ def save_dict_to_json(dict_map: Dict[str, int], file_path: str, sort_keys: bool 
         json.dump(dict_map, fp, sort_keys=sort_keys, indent=4)
 
 
-def tokenize_and_prune(text: str) -> List[str]:
+def read_json_as_dict(path: str) -> Dict[str, Any]:
+    with open(path) as json_file:
+        return json.load(json_file)
+
+
+def tokenize_prune_stem(text: str, stemming_map: Optional[Dict[str, str]] = None) -> List[str]:
     """
-    Use NLTK word tokenisation and clean our text
-    TODO: Stem the text in a considered manner post tokenization.
+    Use NLTK word tokenisation and clean our text, and (if passed to the function) use stemming map to stem all words.
+    NOTE: If `word` is not in `stemming_map`, we do not include it
     """
-    return [word for word in word_tokenize(text) if len(word) > 1 and word.isalpha() and word not in STOP_WORDS]
+    return [
+        stemming_map[word] if stemming_map is not None else word
+        for word in word_tokenize(text)
+        if len(word) > 1 and word.isalpha() and word not in STOP_WORDS and word in stemming_map
+    ]
+
+
+def tokenize_prune(text: str) -> List[str]:
+    """ Use NLTK word tokenisation and clean our text """
+    return [
+        word
+        for word in word_tokenize(text)
+        if len(word) > 1 and word.isalpha() and word not in STOP_WORDS
+    ]
 
 
 def write_list_to_file(list_of_strings: List[str], target_file: str) -> None:

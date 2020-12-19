@@ -37,6 +37,12 @@ def parse_arguments(args_to_parse):
         default='train',
         help="The name of the subdirectory where we should save training data (losses, metrics, models, etc.)",
     )
+    general.add_argument(
+        "--stemmer-path",
+        type=str,
+        required=True,
+        help="Path to the SALAMA stemming dictionary",
+    )
 
     training = parser.add_argument_group('Training settings')
     training.add_argument(
@@ -80,6 +86,7 @@ def main(args):
         build_graph_from_df(
             graph_dir=graph_dir,
             df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
+            stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
             text_column='document_content',
             label_column='document_type',
             window_size=20,

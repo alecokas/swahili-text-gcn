@@ -13,7 +13,7 @@ from collections import Counter
 
 from shared.utils import append_to_jsonl
 from shared.global_constants import RES_DIR
-from shared.utils import save_dict_to_json, tokenize_and_prune
+from shared.utils import save_dict_to_json, tokenize_prune
 from gnn.dataloading.build_graph import _load_text_and_labels
 from preprocessing.stemming import create_stemming_map
 
@@ -74,7 +74,7 @@ def create_vocab_counts(
 
     # Create a vocab list sorted by the frequency of each word
     print("Creating vocab with word counts...")
-    cv = CountVectorizer(tokenizer=tokenize_and_prune)
+    cv = CountVectorizer(tokenizer=tokenize_prune)
     cv_fit = cv.fit_transform(document_list)
     word_list = cv.get_feature_names()
     count_list = cv_fit.toarray().sum(axis=0)
