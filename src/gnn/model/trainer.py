@@ -20,6 +20,7 @@ class Trainer(object):
         device: torch.device,
         train_nodes: torch.LongTensor,
         val_nodes: torch.LongTensor,
+        vocab_size: int,
         results_dir: str,
         validate_every_n_epochs: int,
         save_after_n_epochs: int,
@@ -39,6 +40,8 @@ class Trainer(object):
         ), f'There are overlapping nodes: {len(set(train_nodes).intersection(set(val_nodes)))}'
         self.train_nodes = train_nodes
         self.val_nodes = val_nodes
+        self.vocab_size = vocab_size
+        print(f'Vocabulary offset: {vocab_size}')
 
         self.results_dir = results_dir
         self.validate_every_n_epochs = validate_every_n_epochs
@@ -111,7 +114,7 @@ class Trainer(object):
         self.model.train()
         self.optimiser.zero_grad()
         logits = self.model(input_features, adjacency)
-        train_loss = self.loss_fn(logits[self.train_nodes], labels[self.train_nodes])
+        train_loss = self.loss_fn(logits[self.train_nodes + self.vocab_size], labels[self.train_nodes])
 
         train_loss.backward()
         self.optimiser.step()
@@ -129,11 +132,11 @@ class Trainer(object):
     ) -> Dict[str, Any]:
         self.model.eval()
         logits = self.model(input_features, adjacency)
-        val_loss = self.loss_fn(logits[self.val_nodes], labels[self.val_nodes])
+        val_loss = self.loss_fn(logits[self.val_nodes + self.vocab_size], labels[self.val_nodes])
 
         # print(f'val loss: {val_loss}')
 
-        val_accuracy = accuracy(logits[self.val_nodes], labels[self.val_nodes], is_logit_output=True)
+        val_accuracy = accuracy(logits[self.val_nodes + self.vocab_size], labels[self.val_nodes], is_logit_output=True)
         return {'val loss': val_loss.item(), 'F-score': None, 'Accuracy': val_accuracy}
 
     def _checkpoint_model(self, epoch: int) -> None:
