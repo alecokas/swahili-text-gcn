@@ -6,7 +6,7 @@ from gnn.dataloading.build_graph import build_graph_from_df
 from gnn.dataloading.loaders import load_datasets, load_train_val_nodes
 from gnn.model.gcn import GCN
 from gnn.model.trainer import Trainer
-from gnn.utils.utils import get_device
+from gnn.utils.utils import get_device, get_vocab_size
 from shared.utils import mkdir
 
 # TODO: import this from global_constants.py
@@ -114,6 +114,7 @@ def main(args):
         device=get_device(args.use_gpu),
         train_nodes=train_nodes,
         val_nodes=val_nodes,
+        vocab_size=get_vocab_size(graph_dir),
         results_dir=os.path.join(results_dir, args.train_dir),
         validate_every_n_epochs=2,
         save_after_n_epochs=0,
