@@ -1,11 +1,15 @@
 appdirs==1.4.4
+beautifulsoup4==4.9.3
 black==20.8b1
-bs4==0.0.1
+certifi==2020.12.5
+chardet==3.0.4
 click==7.1.2
 dataclasses==0.8
+fasttext==0.9.2
 flake8==3.8.4
 future==0.18.2
 gensim==3.8.3
+idna==2.10
 importlib-metadata==3.1.0
 joblib==0.17.0
 jsonlines==1.2.0
@@ -17,6 +21,7 @@ pandas==1.1.4
 pathspec==0.8.1
 Pillow==8.0.1
 pkg-resources==0.0.0
+pybind11==2.6.1
 pycodestyle==2.6.0
 pyflakes==2.2.0
 python-dateutil==2.8.1
@@ -28,6 +33,7 @@ scipy==1.5.4
 six==1.15.0
 sklearn==0.0
 smart-open==4.0.1
+soupsieve==2.1
 threadpoolctl==2.1.0
 toml==0.10.2
 torch==1.7.0
@@ -36,4 +42,5 @@ torchvision==0.8.1
 tqdm==4.54.0
 typed-ast==1.4.1
 typing-extensions==3.7.4.3
+urllib3==1.26.2
 zipp==3.4.0
