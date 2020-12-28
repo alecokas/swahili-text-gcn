@@ -1,3 +1,4 @@
+from datetime import datetime
 import errno
 import json
 import jsonlines
@@ -86,3 +87,21 @@ def write_to_meta(data_meta_path: str, key_val: Dict[str, Any]) -> None:
 
     with open(data_meta_path, 'w') as meta_file:
         json.dump(meta_data, meta_file)
+
+
+def save_cli_options(options, save_dir: str) -> None:
+    """ Save all options to JSON file.
+        Arguments:
+            options: A Namespace object from argparse
+            save_dir: String location to save the options
+    """
+    opt_dict = {}
+    for option in vars(options):
+        opt_dict[option] = getattr(options, option)
+
+    mkdir(save_dir)
+    now = datetime.now()
+    dt_string = now.strftime("%d.%m.%Y-%H:%M:%S")
+    opts_file_path = os.path.join(save_dir, f"opts-{dt_string}.json")
+    with open(opts_file_path, "w") as opt_file:
+        json.dump(opt_dict, opt_file)

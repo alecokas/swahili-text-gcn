@@ -7,7 +7,7 @@ from gnn.dataloading.loaders import load_datasets, load_train_val_nodes
 from gnn.model.gcn import GCN
 from gnn.model.trainer import Trainer
 from gnn.utils.utils import get_device, get_vocab_size
-from shared.utils import mkdir
+from shared.utils import mkdir, save_cli_options
 
 # TODO: import this from global_constants.py
 RES_DIR = 'results'
@@ -78,6 +78,8 @@ def parse_arguments(args_to_parse):
 def main(args):
     results_dir = os.path.join(RES_DIR, args.name)
     mkdir(results_dir)
+    save_cli_options(args, results_dir)
+
     graph_dir = os.path.join(results_dir, args.graph_data_dir)
 
     if not os.path.isdir(graph_dir):
