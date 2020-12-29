@@ -8,8 +8,8 @@ def create_stemming_map(raw_path_name: str, cleaned_path_name: str) -> None:
     raw_salama_results = read_jsonl(raw_path_name)
     stemming_map = _generate_initial_map(raw_salama_results)
     stemming_map = _eliminate_single_repeated_char_words(stemming_map)
-    stemming_map = _merge_repeated_letter_entries(stemming_map)
-    # stemming_map = _merge_onomatopoeic_words(stemming_map)
+    stemming_map = _merge_laughs_words(stemming_map)
+    stemming_map = _merge_onomatopoeic_words(stemming_map)
     save_dict_to_json(stemming_map, cleaned_path_name)
 
 
@@ -33,7 +33,10 @@ def _eliminate_single_repeated_char_words(stemming_map: Dict[str, str]) -> Dict[
 
 
 def _merge_repeated_letter_entries(stemming_map: Dict[str, str]) -> Dict[str, str]:
-    """ XXX: For example merge the pairs: {`aisee`: `aisee`} and {`aiseee`: `aiseee`} """
+    """
+    XXX: For example merge the pairs: {`aisee`: `aisee`} and {`aiseee`: `aiseee`}
+    NOTE: Not actually convinced that this is a good idea as it might merge things that shouldn't be merged
+    """
     all_words = set(stemming_map.keys())
     regex = re.compile(r"^([a-z])\1\1+|([a-z])\2\2+$")
     words_with_repeated_chars = list(filter(regex.search, list(all_words)))
@@ -71,5 +74,22 @@ def _merge_repeated_letter_entries(stemming_map: Dict[str, str]) -> Dict[str, st
 
 
 def _merge_onomatopoeic_words(stemming_map: Dict[str, str]) -> Dict[str, str]:
-    """ TODO: Words with patterns, such as `hahaha` and `haha` should be merged """
-    pass
+    """ Set eh's, ah, and ohs to the keyword onomatopoeia"""
+    all_words = set(stemming_map.keys())
+    regex = re.compile(r"^(a)\1+h+$|^a+(h)\2+$|^(e)\3+h+$|^e+(h)\4+$|^(o)\5+h+$|^o+(h)\6+$")
+    onomatopoeic_words = list(filter(regex.search, list(all_words)))
+
+    for onomatopoeic_word in onomatopoeic_words:
+        stemming_map[onomatopoeic_word] = 'onomatopoeia'
+    return stemming_map
+
+
+def _merge_laughs_words(stemming_map: Dict[str, str]) -> Dict[str, str]:
+    """ Set haha and ahah variations to a simple `haha`"""
+    all_words = set(stemming_map.keys())
+    regex = re.compile(r"^(ha)\1+$|^(ah)\2+a?$")
+    laugh_words = list(filter(regex.search, list(all_words)))
+
+    for laugh_word in laugh_words:
+        stemming_map[laugh_word] = 'laugh'
+    return stemming_map
