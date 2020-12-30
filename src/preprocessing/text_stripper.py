@@ -1,4 +1,5 @@
 from html.parser import HTMLParser
+from unidecode import unidecode_expect_ascii
 
 
 class HTMLStripper(HTMLParser):
@@ -23,4 +24,4 @@ def strip_tags(html: str) -> str:
 
 
 def ignore_non_ascii(text: str) -> str:
-    return text.encode('ascii', errors='ignore').decode()
+    return unidecode_expect_ascii(text)

@@ -152,7 +152,6 @@ def main(args):
 
     if not os.path.isfile(vocab_counts_path):
         create_vocab_counts(df_path, vocab_counts_path)
-
     vocab_counts = load_vocab_counts(vocab_counts_path)
 
     done_words = get_done_words(stemming_download_path)

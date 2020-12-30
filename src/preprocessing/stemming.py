@@ -1,12 +1,14 @@
 import re
 from typing import Dict, List
 
+from preprocessing.text_stripper import ignore_non_ascii
 from shared.utils import read_jsonl, save_dict_to_json
 
 
 def create_stemming_map(raw_path_name: str, cleaned_path_name: str) -> None:
     raw_salama_results = read_jsonl(raw_path_name)
     stemming_map = _generate_initial_map(raw_salama_results)
+    stemming_map = _ignore_non_ascii_entries(stemming_map)
     stemming_map = _eliminate_single_repeated_char_words(stemming_map)
     stemming_map = _merge_laughs_words(stemming_map)
     stemming_map = _merge_onomatopoeic_words(stemming_map)
@@ -18,6 +20,10 @@ def _generate_initial_map(raw_salama_results: List[Dict[str, str]]) -> Dict[str,
         raw_result['word']: raw_result['stem'] if raw_result['stem'] != '' else raw_result['word']
         for raw_result in raw_salama_results
     }
+
+
+def _ignore_non_ascii_entries(stemming_map: Dict[str, str]) -> Dict[str, str]:
+    return {ignore_non_ascii(key): ignore_non_ascii(val) for key, val in stemming_map.items()}
 
 
 def _eliminate_single_repeated_char_words(stemming_map: Dict[str, str]) -> Dict[str, str]:
