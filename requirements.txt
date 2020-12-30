@@ -42,5 +42,6 @@ torchvision==0.8.1
 tqdm==4.54.0
 typed-ast==1.4.1
 typing-extensions==3.7.4.3
+Unidecode==1.1.2
 urllib3==1.26.2
 zipp==3.4.0
