@@ -33,11 +33,12 @@ class SpGAT(nn.Module):
             dropout=dropout_ratio,
             relu_negative_slope=relu_negative_slope,
         )
+        self.dropout_ratio = dropout_ratio
 
     def forward(self, x: torch.sparse.FloatTensor, adj: torch.sparse.FloatTensor):
-        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.dropout(x, self.dropout_ratio, training=self.training)
         x = torch.cat([F.elu(att(x, adj)) for att in self.gat_layer_1], dim=1)
-        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.dropout(x, self.dropout_ratio, training=self.training)
         x = F.elu(self.out_att(x, adj))
         # return F.log_softmax(x, dim=1)
         return x
