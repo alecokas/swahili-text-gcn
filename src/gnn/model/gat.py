@@ -71,13 +71,13 @@ class GraphAttnLayer(nn.Module):
         Outputs:
             out.shape == out_features
         """
-        # w_h_transpose: we use the transposed form - in the end this doesn't matter
-        # w_h_transpose.shape == (N, out_features)
         h = self.dropout(h)
-        w_h_transpose = torch.mm(h, self.weights)
-        e = self._attn_mechanism(w_h_transpose)
+        # h over here is actually w_h_transpose: we use the transposed form - in the end this doesn't matter
+        # w_h_transpose.shape == (N, out_features)
+        h = torch.mm(h, self.weights)
+        e = self._attn_mechanism(h)
         a = self._norm_over_neighbourhood(e, adjacency)
-        return torch.matmul(a, w_h_transpose)
+        return torch.matmul(a, h)
 
     def _attn_mechanism(self, w_h_transpose: torch.FloatTensor):
         """
