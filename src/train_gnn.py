@@ -4,7 +4,7 @@ import sys
 
 from gnn.dataloading.build_graph import build_graph_from_df
 from gnn.dataloading.loaders import load_datasets, load_train_val_nodes
-from gnn.model.gcn import GCN
+from gnn.model.model import create_model
 from gnn.model.trainer import Trainer
 from gnn.utils.utils import get_device, get_vocab_size
 from shared.utils import mkdir, save_cli_options
@@ -19,6 +19,13 @@ def parse_arguments(args_to_parse):
 
     general = parser.add_argument_group('General settings')
     general.add_argument('name', type=str, help="The name of the experimental directory - used for saving and loading.")
+    general.add_argument(
+        '--model',
+        type=str,
+        default='gcn',
+        choices=['gcn', 'gat', 'spgat'],
+        help='Select a GNN model to use'
+    )
     general.add_argument(
         '--input-data-dir',
         type=str,
@@ -103,12 +110,15 @@ def main(args):
     )
 
     # Initialise model, trainer, and train
-    text_gcn_model = GCN(
+    text_gcn_model = create_model(
+        model_type=args.model,
         num_classes=len(labels.unique()),
         num_input_features=len(input_features),
         num_hidden_features=200,
+        num_heads=8,
         dropout_ratio=args.dropout_ratio,
         use_bias=False,
+        relu_negative_slope=0.2
     )
     trainer = Trainer(
         model=text_gcn_model,
