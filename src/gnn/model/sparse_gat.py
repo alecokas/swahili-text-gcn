@@ -112,7 +112,7 @@ class SpGraphAttentionLayer(nn.Module):
         assert not torch.isnan(h).any()
 
         # (Z, E) tensor of indices where there are Z non-zero indices
-        edge = adj.nonzero().t()
+        edge = torch.nonzero(adj, as_tuple=False).t()
         # edge_h.shape == (2*D x E) - Select relevant Wh nodes
         edge_h = torch.cat((h[edge[0, :], :], h[edge[1, :], :]), dim=1).t()
 
