@@ -3,6 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 from pathlib import Path
+import random
 import sys
 import torch
 import urllib.request
@@ -53,6 +54,12 @@ def parse_arguments(args_to_parse):
         default='uniform_over_all_data',
         type=str,
         help="Determine how to generate the validation set split if not already saved to disk",
+    )
+    general.add_argument(
+        "--seed",
+        type=int,
+        default=12321,
+        help='Random seed for reproducability'
     )
     return parser.parse_args(args_to_parse)
 
@@ -145,6 +152,9 @@ def _get_document_type(abs_path: str) -> str:
 
 def main(args):
     """ Primary entry point for data pre-processing """
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+
     results_dir = os.path.join(RES_DIR, args.name)
     mkdir(results_dir)
 
