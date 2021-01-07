@@ -2,13 +2,13 @@ from collections import defaultdict
 from math import log
 import numpy as np
 import os
-import pandas as pd
 from scipy.sparse import csr_matrix, hstack, vstack, identity, save_npz
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tqdm import tqdm
 import torch
 from typing import Dict, List, Set, Tuple, Optional
 
+from shared.loaders import load_text_and_labels, save_categorical_labels
 from shared.utils import save_dict_to_json, read_json_as_dict, tokenize_prune_stem, write_to_meta
 
 
@@ -26,8 +26,8 @@ def build_graph_from_df(
                 Remember that you need to first generate a stemming map using the `download_stemming` script'
         )
     stemming_map = read_json_as_dict(stemming_map_path)
-    document_list, labels = _load_text_and_labels(df_path, text_column, label_column)
-    _save_categorical_labels(graph_dir, labels)
+    document_list, labels = load_text_and_labels(df_path, text_column, label_column)
+    save_categorical_labels(graph_dir, labels)
 
     # Obtain TF-IDF for word-document weights: TODO: strip_accents='unicode'
     print('TF-IDF...')
@@ -81,24 +81,6 @@ def build_graph_from_df(
             'num_windows': num_windows,
         },
     )
-
-
-def _load_text_and_labels(df_path: str, text_column: str, label_column: str) -> Tuple[List[List[str]], List[str]]:
-    """
-    Load the CSV from file, extract the column we want along with the corresponding labels.
-    """
-    dataset_df = pd.read_csv(df_path, sep=';')
-    document_content = dataset_df[text_column].values.tolist()
-    labels = dataset_df[label_column].values.tolist()
-    assert len(labels) == len(document_content), 'The number of labels and docs should match'
-    return document_content, labels
-
-
-def _save_categorical_labels(graph_dir: str, labels: List[str]) -> None:
-    label_to_cat = {label: cat for cat, label in enumerate(set(labels))}
-    catagorical_labels = torch.LongTensor([label_to_cat[label] for label in labels])
-    save_dict_to_json(label_to_cat, os.path.join(graph_dir, 'label_map.json'))
-    torch.save(catagorical_labels, os.path.join(graph_dir, 'labels.pt'))
 
 
 def _create_window_contexts(doc_list: List[str], window_size: int, stemming_map: Dict[str, str]) -> List[Set[str]]:
