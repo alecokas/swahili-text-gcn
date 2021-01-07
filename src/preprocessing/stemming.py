@@ -38,47 +38,6 @@ def _eliminate_single_repeated_char_words(stemming_map: Dict[str, str]) -> Dict[
     return stemming_map
 
 
-def _merge_repeated_letter_entries(stemming_map: Dict[str, str]) -> Dict[str, str]:
-    """
-    XXX: For example merge the pairs: {`aisee`: `aisee`} and {`aiseee`: `aiseee`}
-    NOTE: Not actually convinced that this is a good idea as it might merge things that shouldn't be merged
-    """
-    all_words = set(stemming_map.keys())
-    regex = re.compile(r"^([a-z])\1\1+|([a-z])\2\2+$")
-    words_with_repeated_chars = list(filter(regex.search, list(all_words)))
-
-    print(words_with_repeated_chars)
-    # TODO: roll back the repeated character
-    for word_with_repeated_chars in words_with_repeated_chars:
-        match = regex.search(word_with_repeated_chars)
-        print(match.span(0))
-        left_idx, right_idx = match.span(0)
-        print(word_with_repeated_chars[left_idx:right_idx])
-        print(word_with_repeated_chars)
-        if left_idx == 0:
-            # Starting repeated character
-            while left_idx < right_idx:
-                left_idx += 1
-                if word_with_repeated_chars[left_idx:] in all_words:
-                    # Merge stemmed form to match the non-repeating form
-                    print(word_with_repeated_chars[left_idx:])
-                    stemming_map[word_with_repeated_chars] = stemming_map[
-                        word_with_repeated_chars[left_idx:]
-                    ]
-        else:
-            # Trailing repeating character
-            while left_idx < right_idx:
-                right_idx -= 1
-                if word_with_repeated_chars[:right_idx] in all_words:
-                    print(word_with_repeated_chars[:right_idx])
-                    stemming_map[word_with_repeated_chars] = stemming_map[
-                        word_with_repeated_chars[:right_idx]
-                    ]
-        print()
-
-    return stemming_map
-
-
 def _merge_onomatopoeic_words(stemming_map: Dict[str, str]) -> Dict[str, str]:
     """ Set eh's, ah, and ohs to the keyword onomatopoeia"""
     all_words = set(stemming_map.keys())
