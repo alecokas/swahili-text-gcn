@@ -10,7 +10,7 @@ from gnn.dataloading.loaders import load_datasets, load_train_val_nodes
 from gnn.model.model import create_model
 from gnn.model.trainer import Trainer
 from gnn.utils.utils import get_device, get_vocab_size
-from shared.utils import mkdir, save_cli_options
+from shared.utils import save_cli_options
 
 # TODO: import this from global_constants.py
 RES_DIR = 'results'
@@ -97,14 +97,14 @@ def main(args):
     torch.manual_seed(args.seed)
 
     results_dir = os.path.join(RES_DIR, args.name)
-    mkdir(results_dir)
+    os.makedirs(results_dir, exist_ok=True)
     save_cli_options(args, results_dir)
 
     graph_dir = os.path.join(results_dir, args.graph_data_dir)
 
     if not os.path.isdir(graph_dir):
         print('Building graph...')
-        mkdir(graph_dir)
+        os.makedirs(graph_dir, exist_ok=True)
         build_graph_from_df(
             graph_dir=graph_dir,
             df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),

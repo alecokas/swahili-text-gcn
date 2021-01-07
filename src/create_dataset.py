@@ -11,7 +11,7 @@ import zipfile
 
 from preprocessing.text_stripper import strip_tags, ignore_non_ascii
 from preprocessing.data_split import create_train_val_split
-from shared.utils import mkdir, save_dict_to_json, save_cli_options
+from shared.utils import save_dict_to_json, save_cli_options
 from shared.global_constants import RES_DIR, DATA_DIR
 
 
@@ -80,7 +80,7 @@ def _download_zenodo_news_data(data_dir: str) -> str:
     if os.path.isdir(download_location):
         print(f'Skipping download: {download_location} already exists')
     else:
-        mkdir(download_location)
+        os.makedirs(download_location, exist_ok=True)
         file_url = "https://zenodo.org/record/4300294/files/train.csv?download=1"
         urllib.request.urlretrieve(file_url, os.path.join(download_location, 'zenodo-swahili-news-train.csv'))
     return download_location
@@ -97,7 +97,7 @@ def _download_hsc_data(data_dir: str) -> str:
     if os.path.isdir(download_location):
         print(f'Skipping download: {download_location} already exists')
     else:
-        mkdir(download_location)
+        os.makedirs(download_location, exist_ok=True)
         for file_name in [f'{SUBDIR}.zip', f'{SUBDIR}.zip.md5']:
             file_url = f'{ROOT_DOWNLOAD_URL}/{file_name}'
             urllib.request.urlretrieve(file_url, f'{download_location}/{file_name}')
@@ -156,7 +156,7 @@ def main(args):
     np.random.seed(args.seed)
 
     results_dir = os.path.join(RES_DIR, args.name)
-    mkdir(results_dir)
+    os.makedirs(results_dir, exist_ok=True)
 
     data_dir = download_raw_data(download_location=DATA_DIR, dataset=args.dataset_name.lower())
 

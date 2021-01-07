@@ -1,5 +1,4 @@
 from datetime import datetime
-import errno
 import json
 import jsonlines
 from nltk import word_tokenize
@@ -7,15 +6,6 @@ import os
 from typing import Any, Dict, List, Optional
 
 from shared.global_constants import STOP_WORDS
-
-
-def mkdir(directory: str) -> None:
-    """ Make directory if it does not exist """
-    try:
-        os.makedirs(directory)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
 
 
 def rm_file(file_name: str) -> None:
@@ -99,7 +89,7 @@ def save_cli_options(options, save_dir: str) -> None:
     for option in vars(options):
         opt_dict[option] = getattr(options, option)
 
-    mkdir(save_dir)
+    os.makedirs(save_dir, exist_ok=True)
     now = datetime.now()
     dt_string = now.strftime("%d.%m.%Y-%H:%M:%S")
     opts_file_path = os.path.join(save_dir, f"opts-{dt_string}.json")
