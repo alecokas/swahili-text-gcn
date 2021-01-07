@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import pandas as pd
+from random import sample
 import torch
 from typing import List, Tuple
 
@@ -26,3 +27,13 @@ def save_categorical_labels(save_dir: str, labels: List[str], as_numpy: bool = F
         np.save(os.path.join(save_dir, 'labels.npy'), catagorical_labels)
     else:
         torch.save(catagorical_labels, os.path.join(save_dir, 'labels.pt'))
+
+
+def load_train_val_nodes(
+    preproc_dir: str, train_set_label_proportion: float
+) -> Tuple[torch.LongTensor, torch.LongTensor]:
+    train_nodes = torch.load(os.path.join(preproc_dir, 'train-indices.pt')).tolist()
+    train_nodes = torch.LongTensor(sample(train_nodes, k=int(len(train_nodes) * train_set_label_proportion)))
+
+    val_nodes = torch.load(os.path.join(preproc_dir, 'val-indices.pt'))
+    return train_nodes, val_nodes

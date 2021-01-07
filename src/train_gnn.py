@@ -6,14 +6,13 @@ import sys
 import torch
 
 from gnn.dataloading.build_graph import build_graph_from_df
-from gnn.dataloading.loaders import load_datasets, load_train_val_nodes
+from gnn.dataloading.loaders import load_datasets
 from gnn.model.model import create_model
 from gnn.model.trainer import Trainer
 from gnn.utils.utils import get_device, get_vocab_size
+from shared.global_constants import RES_DIR
+from shared.loaders import load_train_val_nodes
 from shared.utils import save_cli_options
-
-# TODO: import this from global_constants.py
-RES_DIR = 'results'
 
 
 def parse_arguments(args_to_parse):

@@ -29,13 +29,3 @@ def _normalise_adjacency(adjacency: csr_matrix) -> csr_matrix:
     degree_inv_sqrt = diags(degree_inv_sqrt, format="coo")
     # Compute D^(-0.5) A D^(-0.5)
     return degree_inv_sqrt.dot(adjacency).dot(degree_inv_sqrt)
-
-
-def load_train_val_nodes(
-    preproc_dir: str, train_set_label_proportion: float
-) -> Tuple[torch.LongTensor, torch.LongTensor]:
-    train_nodes = torch.load(os.path.join(preproc_dir, 'train-indices.pt')).tolist()
-    train_nodes = torch.LongTensor(sample(train_nodes, k=int(len(train_nodes) * train_set_label_proportion)))
-
-    val_nodes = torch.load(os.path.join(preproc_dir, 'val-indices.pt'))
-    return train_nodes, val_nodes
