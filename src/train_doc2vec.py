@@ -1,5 +1,7 @@
 import argparse
+import numpy as np
 import os
+import random
 import sys
 
 from embeddings.doc2vec import read_and_format_docs, separate_into_subsets, train, save_for_inference
@@ -25,6 +27,12 @@ def parse_arguments(args_to_parse):
         default='doc2vec',
         help="The name of the subdirectory where we should save training data (losses, metrics, models, etc.)",
     )
+    general.add_argument(
+        "--seed",
+        type=int,
+        default=12321,
+        help='Random seed for reproducability'
+    )
 
     training = parser.add_argument_group('Training settings')
     training.add_argument(
@@ -44,6 +52,9 @@ def parse_arguments(args_to_parse):
 
 def main(args):
     """ Entry point for training a doc2vec model """
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+
     preproc_dir = os.path.join(RES_DIR, args.input_data_dir)
     results_dir = os.path.join(RES_DIR, args.name)
 

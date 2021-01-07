@@ -1,6 +1,9 @@
 import argparse
+import numpy as np
 import os
+import random
 import sys
+import torch
 
 from gnn.dataloading.build_graph import build_graph_from_df
 from gnn.dataloading.loaders import load_datasets, load_train_val_nodes
@@ -50,6 +53,12 @@ def parse_arguments(args_to_parse):
         required=True,
         help="Path to the SALAMA stemming dictionary",
     )
+    general.add_argument(
+        "--seed",
+        type=int,
+        default=12321,
+        help='Random seed for reproducability'
+    )
 
     training = parser.add_argument_group('Training settings')
     training.add_argument(
@@ -83,6 +92,10 @@ def parse_arguments(args_to_parse):
 
 
 def main(args):
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
     results_dir = os.path.join(RES_DIR, args.name)
     mkdir(results_dir)
     save_cli_options(args, results_dir)
