@@ -1,5 +1,6 @@
+import numpy as np
 import os
-from scipy.sparse import save_npz
+from scipy.sparse import csr_matrix, save_npz, load_npz
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from shared.utils import save_dict_to_json, read_json_as_dict, tokenize_prune_stem, write_to_meta
@@ -41,3 +42,9 @@ def build_tfidf_from_df(save_dir: str, df_path: str, stemming_map_path: str, tex
             'num_docs': len(document_list),
         },
     )
+
+
+def load_tfidf(preproc_dir: str) -> csr_matrix:
+    tf_idf = load_npz(os.path.join(preproc_dir, 'tf-idf.npz'))
+    labels = np.load(os.path.join(preproc_dir, 'labels.npy'))
+    return tf_idf, labels

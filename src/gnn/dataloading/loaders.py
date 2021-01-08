@@ -1,7 +1,5 @@
-from collections import Counter
 import numpy as np
 import os
-from random import shuffle, sample, choices
 from scipy.sparse import csr_matrix, diags, load_npz
 import torch
 from typing import Tuple
