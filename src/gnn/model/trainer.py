@@ -24,6 +24,8 @@ class Trainer(object):
         validate_every_n_epochs: int,
         save_after_n_epochs: int,
         checkpoint_every_n_epochs: int,
+        use_early_stopping: bool,
+        early_stopping_epochs: int,
     ):
         self.device = device
         self.model = model
@@ -46,13 +48,16 @@ class Trainer(object):
         self.validate_every_n_epochs = validate_every_n_epochs
         self.save_after_n_epochs = save_after_n_epochs
         self.checkpoint_every_n_epochs = checkpoint_every_n_epochs
+        self.use_early_stopping = use_early_stopping
+        self.early_stopping_epochs = early_stopping_epochs
         self.has_saved_metric = False
         self._setup_dirs()
 
         self.metric_of_interest = 'val loss'
         self.best_metric = math.inf
+        self.last_epoch_with_improvement = 0
 
-    def _setup_dirs(self):
+def _setup_dirs(self):
         self.ckpt_dir = os.path.join(self.results_dir, 'ckpt')
         self.best_model_dir = os.path.join(self.results_dir, 'best')
         os.makedirs(self.ckpt_dir, exist_ok=True)
@@ -86,7 +91,14 @@ class Trainer(object):
                         self._checkpoint_model(epoch_num)
                         if self._is_best(val_metrics):
                             self._save_best_model(epoch_num)
-                else:
+
+                if self._is_best(val_metrics) and self.use_early_stopping:
+                    self.last_epoch_with_improvement = epoch_num
+
+                if epoch_num > self.last_epoch_with_improvement + early_stopping_epochs and self.use_early_stopping:
+                    print(f'Breaking after no improvement since epoch {self.last_epoch_with_improvement}')
+                    break
+            else:
                     # if we haven't validated, create an empt val metric dict
                     val_metrics = {'val loss': None}
 
