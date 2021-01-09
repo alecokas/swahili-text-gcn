@@ -8,7 +8,7 @@ from torch.optim import AdamW
 from typing import Any, Dict
 
 from gnn.utils.metrics import accuracy, save_metrics
-from gnn.utils.utils import remove_previous_best
+from gnn.utils.utils import remove_previous_best, save_training_notes
 
 
 class Trainer(object):
@@ -24,6 +24,8 @@ class Trainer(object):
         validate_every_n_epochs: int,
         save_after_n_epochs: int,
         checkpoint_every_n_epochs: int,
+        use_early_stopping: bool,
+        early_stopping_epochs: int,
     ):
         self.device = device
         self.model = model
@@ -46,11 +48,14 @@ class Trainer(object):
         self.validate_every_n_epochs = validate_every_n_epochs
         self.save_after_n_epochs = save_after_n_epochs
         self.checkpoint_every_n_epochs = checkpoint_every_n_epochs
+        self.use_early_stopping = use_early_stopping
+        self.early_stopping_epochs = early_stopping_epochs
         self.has_saved_metric = False
         self._setup_dirs()
 
         self.metric_of_interest = 'val loss'
         self.best_metric = math.inf
+        self.last_epoch_with_improvement = 1
 
     def _setup_dirs(self):
         self.ckpt_dir = os.path.join(self.results_dir, 'ckpt')
@@ -86,6 +91,19 @@ class Trainer(object):
                         self._checkpoint_model(epoch_num)
                         if self._is_best(val_metrics):
                             self._save_best_model(epoch_num)
+
+                    if self.use_early_stopping:
+                        if self._is_best(val_metrics):
+                            self.last_epoch_with_improvement = epoch_num
+                        if epoch_num > self.last_epoch_with_improvement + self.early_stopping_epochs:
+                            note = f'Breaking on epoch {epoch_num} after no improvement since epoch {self.last_epoch_with_improvement}'
+                            print(note)
+                            save_training_notes(file_path=os.path.join(self.results_dir, 'training-notes.jsonl'),
+                                       epoch_num=epoch_num,
+                                       note=note)
+
+                            break
+
                 else:
                     # if we haven't validated, create an empt val metric dict
                     val_metrics = {'val loss': None}
@@ -157,7 +175,7 @@ class Trainer(object):
 
     def _is_best(self, val_metrics: Dict[str, float]) -> bool:
         if 'loss' in self.metric_of_interest:
-            if val_metrics[self.metric_of_interest] < self.best_metric:
+            if val_metrics[self.metric_of_interest] <= self.best_metric:
                 self.best_metric = val_metrics[self.metric_of_interest]
                 return True
             else:

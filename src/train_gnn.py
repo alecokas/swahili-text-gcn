@@ -87,6 +87,18 @@ def parse_arguments(args_to_parse):
         default=0.2,
         help='Ratio of nodes in the training set which we keep labelled',
     )
+    training.add_argument(
+        '--early_stopping_epochs',
+        type=int,
+        default=10,
+        help="The number of epochs to stop after if there is no improvement in the metric of interest",
+    )
+    training.add_argument(
+        '--disable-early-stopping',
+        action='store_true',
+        default=False,
+        help="Whether to disable early stopping. Default is False",
+    )
     return parser.parse_args(args_to_parse)
 
 
@@ -143,6 +155,8 @@ def main(args):
         validate_every_n_epochs=2,
         save_after_n_epochs=0,
         checkpoint_every_n_epochs=2,
+        use_early_stopping = ~args.disable_early_stopping,
+        early_stopping_epochs = args.early_stopping_epochs
     )
     print('Training...')
     trainer(
