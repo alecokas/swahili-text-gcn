@@ -34,6 +34,13 @@ def parse_arguments(args_to_parse):
         required=True,
         help="Path to the SALAMA stemming dictionary",
     )
+    general.add_argument(
+        '--model',
+        type=str,
+        default='tf-idf',
+        choices=['tf-idf', 'doc2vec', 'fasttext'],
+        help='Select the model type to use before feeding into a logistic regression layer'
+    )
     general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
 
     training = parser.add_argument_group('Training settings')
@@ -63,18 +70,32 @@ def main(args):
 
     preproc_dir = os.path.join(results_dir, 'preproc')
 
-    if not os.path.isdir(preproc_dir):
-        os.makedirs(preproc_dir, exist_ok=True)
-        build_tfidf_from_df(
-            save_dir=preproc_dir,
-            df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
-            stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
-            text_column='document_content',
-            label_column='document_type',
-        )
+    if args.model == 'tf-idf':
+        if not os.path.isdir(preproc_dir):
+            os.makedirs(preproc_dir, exist_ok=True)
+            build_tfidf_from_df(
+                save_dir=preproc_dir,
+                df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
+                stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
+                text_column='document_content',
+                label_column='document_type',
+            )
 
-    print('Load data...')
-    tfidf_features, labels = load_tfidf(preproc_dir)
+        print('Load tf-idf data...')
+        tfidf_features, labels = load_tfidf(preproc_dir)
+
+    elif args.model == 'fasttext':
+        if not os.path.isdir(preproc_dir):
+            os.makedirs(preproc_dir, exist_ok=True)
+            build_avg_fasttext_from_df(
+                save_dir=preproc_dir,
+                df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
+                stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
+                text_column='document_content',
+                label_column='document_type',
+            )
+    else:
+        raise Exception(f'Unrecognised model type: {args.model}')
 
     train_nodes, val_nodes = load_train_val_nodes(
         preproc_dir=os.path.join(RES_DIR, args.input_data_dir),
