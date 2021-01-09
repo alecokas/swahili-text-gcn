@@ -24,4 +24,4 @@ def strip_tags(html: str) -> str:
 
 
 def ignore_non_ascii(text: str) -> str:
-    return unidecode_expect_ascii(text)
+    return unidecode_expect_ascii(text).lower()
