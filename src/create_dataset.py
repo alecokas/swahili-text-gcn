@@ -137,8 +137,8 @@ def _read_and_format_zenodo_news_as_df(data_dir: str) -> pd.DataFrame:
     Remove Some tweet meta data which is not relevant to the problem.
     """
     def clean(text: str):
-        text = re.sub('a post shared by.*?pdt|a post shared by.*?pst', '', text)
-        return ignore_non_ascii(text.lower()).strip()
+        text = ignore_non_ascii(text.lower()).strip()
+        return re.sub(r"a post shared by.*?pdt|a post shared by.*?pst", "", text).strip()
 
     path = os.path.join(data_dir, 'zenodo-swahili-news-train.csv')
     df = pd.read_csv(path).rename(columns={"id": "id/path", "content": "document_content", "category": "document_type"})
