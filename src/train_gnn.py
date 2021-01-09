@@ -95,9 +95,9 @@ def parse_arguments(args_to_parse):
     )
     training.add_argument(
         '--use_early_stopping',
-        type=bool,
+        type=int,
         default=1,
-        help="Whether to use early stopping",
+        help="Whether to use early stopping. Default is 1 (True). Any other value will be false.",
     )
     return parser.parse_args(args_to_parse)
 
