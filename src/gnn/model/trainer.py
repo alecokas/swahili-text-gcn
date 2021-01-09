@@ -8,7 +8,7 @@ from torch.optim import AdamW
 from typing import Any, Dict
 
 from gnn.utils.metrics import accuracy, save_metrics
-from gnn.utils.utils import remove_previous_best
+from gnn.utils.utils import remove_previous_best, save_training_notes
 
 
 class Trainer(object):
@@ -96,7 +96,12 @@ class Trainer(object):
                         if self._is_best(val_metrics):
                             self.last_epoch_with_improvement = epoch_num
                         if epoch_num > self.last_epoch_with_improvement + self.early_stopping_epochs:
-                            print(f'Breaking after no improvement since epoch {self.last_epoch_with_improvement}')
+                            note = f'Breaking on epoch {epoch_num} after no improvement since epoch {self.last_epoch_with_improvement}'
+                            print(note)
+                            save_training_notes(file_path=os.path.join(self.results_dir, 'training-notes.jsonl'),
+                                       epoch_num=epoch_num,
+                                       note=note)
+
                             break
 
                 else:
