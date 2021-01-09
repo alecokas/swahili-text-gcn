@@ -83,7 +83,8 @@ def create_vocab_counts(
         cv = CountVectorizer(tokenizer=lambda text: tokenize_prune_stem(text, stemming_map=stemming_map))
     cv_fit = cv.fit_transform(document_list)
     word_list = cv.get_feature_names()
-    count_list = cv_fit.toarray().sum(axis=0)
+    # Convert to uint16 to keep the memory requirements down, otherwise approx. 34.3 GiB for Zenodo
+    count_list = cv_fit.astype(dtype='uint16').toarray().sum(axis=0)
     word_counts = {word: count for word, count in zip(word_list, count_list)}
     vocab_sorted = {word: int(count) for word, count in Counter(word_counts).most_common()}
     save_dict_to_json(vocab_sorted, vocab_counts_path, sort_keys=False)
@@ -164,6 +165,7 @@ def main(args):
 
     words_above_threshold, words_to_add = get_words_to_add(vocab_counts, done_words, number_to_add, count_threshold)
 
+    print(f'Number of words to add: {len(words_to_add)}')
     if len(words_to_add) > 0:
         print(f"{len(done_words)} words done out of {len(words_above_threshold)} words in vocab above count threshold")
         add_words(words_to_add, stemming_download_path)
