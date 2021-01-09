@@ -15,10 +15,12 @@ def create_stemming_map(raw_path_name: str, cleaned_path_name: str) -> None:
     save_dict_to_json(stemming_map, cleaned_path_name)
 
 
-def _generate_initial_map(raw_salama_results: List[Dict[str, str]]) -> Dict[str, str]:
+def _generate_initial_map(raw_salama_results: List[Dict[str, str]], max_word_length: int = 30) -> Dict[str, str]:
+    """ Create map - but also exclude all words longer than a threshold of characters. Assume these are an error """
     return {
         raw_result['word']: raw_result['stem'] if raw_result['stem'] != '' else raw_result['word']
         for raw_result in raw_salama_results
+        if len(raw_result['word']) <= max_word_length
     }
 
 
