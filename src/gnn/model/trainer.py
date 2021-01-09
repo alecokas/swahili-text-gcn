@@ -55,13 +55,13 @@ class Trainer(object):
 
         self.metric_of_interest = 'val loss'
         self.best_metric = math.inf
-        self.last_epoch_with_improvement = 0
+        self.last_epoch_with_improvement = 1
 
-def _setup_dirs(self):
-        self.ckpt_dir = os.path.join(self.results_dir, 'ckpt')
-        self.best_model_dir = os.path.join(self.results_dir, 'best')
-        os.makedirs(self.ckpt_dir, exist_ok=True)
-        os.makedirs(self.best_model_dir, exist_ok=True)
+    def _setup_dirs(self):
+            self.ckpt_dir = os.path.join(self.results_dir, 'ckpt')
+            self.best_model_dir = os.path.join(self.results_dir, 'best')
+            os.makedirs(self.ckpt_dir, exist_ok=True)
+            os.makedirs(self.best_model_dir, exist_ok=True)
 
     def __call__(
         self,
@@ -92,13 +92,14 @@ def _setup_dirs(self):
                         if self._is_best(val_metrics):
                             self._save_best_model(epoch_num)
 
-                if self._is_best(val_metrics) and self.use_early_stopping:
-                    self.last_epoch_with_improvement = epoch_num
+                    if self.use_early_stopping:
+                        if self._is_best(val_metrics):
+                            self.last_epoch_with_improvement = epoch_num
+                        if epoch_num > self.last_epoch_with_improvement + self.early_stopping_epochs:
+                            print(f'Breaking after no improvement since epoch {self.last_epoch_with_improvement}')
+                            break
 
-                if epoch_num > self.last_epoch_with_improvement + early_stopping_epochs and self.use_early_stopping:
-                    print(f'Breaking after no improvement since epoch {self.last_epoch_with_improvement}')
-                    break
-            else:
+                else:
                     # if we haven't validated, create an empt val metric dict
                     val_metrics = {'val loss': None}
 
@@ -169,7 +170,7 @@ def _setup_dirs(self):
 
     def _is_best(self, val_metrics: Dict[str, float]) -> bool:
         if 'loss' in self.metric_of_interest:
-            if val_metrics[self.metric_of_interest] < self.best_metric:
+            if val_metrics[self.metric_of_interest] <= self.best_metric:
                 self.best_metric = val_metrics[self.metric_of_interest]
                 return True
             else:
