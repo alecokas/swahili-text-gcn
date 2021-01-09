@@ -7,14 +7,13 @@ import jsonlines
 import json
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-from typing import List
+from typing import Dict, List, Optional
 from sklearn.feature_extraction.text import CountVectorizer
 from collections import Counter
 
-from shared.utils import append_to_jsonl
 from shared.global_constants import RES_DIR
-from shared.utils import save_dict_to_json, tokenize_prune
-from gnn.dataloading.build_graph import _load_text_and_labels
+from shared.loaders import load_text_and_labels
+from shared.utils import append_to_jsonl, save_dict_to_json, read_json_as_dict, tokenize_prune, tokenize_prune_stem
 from preprocessing.stemming import create_stemming_map
 
 
@@ -63,18 +62,25 @@ def setup_dir(stemming_dir: str) -> str:
 
 
 def create_vocab_counts(
-    df_path: str, vocab_counts_path: str, text_column: str = "document_content", label_column: str = "document_type"
+    df_path: str,
+    vocab_counts_path: str,
+    stemming_map: Optional[Dict[str, str]] = None,
+    text_column: str = "document_content",
+    label_column: str = "document_type",
 ) -> None:
     if not os.path.isfile(df_path):
         raise FileNotFoundError(
             f"{df_path} could not be found.\
                 Remember that you first need to generate the dataset using the `create_dataset` script"
         )
-    document_list, labels = _load_text_and_labels(df_path, text_column, label_column)
+    document_list, labels = load_text_and_labels(df_path, text_column, label_column)
 
     # Create a vocab list sorted by the frequency of each word
     print("Creating vocab with word counts...")
-    cv = CountVectorizer(tokenizer=tokenize_prune)
+    if stemming_map is None:
+        cv = CountVectorizer(tokenizer=tokenize_prune)
+    else:
+        cv = CountVectorizer(tokenizer=lambda text: tokenize_prune_stem(text, stemming_map=stemming_map))
     cv_fit = cv.fit_transform(document_list)
     word_list = cv.get_feature_names()
     count_list = cv_fit.toarray().sum(axis=0)
@@ -162,7 +168,14 @@ def main(args):
         print(f"{len(done_words)} words done out of {len(words_above_threshold)} words in vocab above count threshold")
         add_words(words_to_add, stemming_download_path)
     else:
+        # Convert the raw data into a cleaned stemming mapp
         create_stemming_map(stemming_download_path, stemming_cleaned_path)
+        # Get the vocab count after the stemming and cleaning process has taken place
+        cleaned_vocab_path = os.path.join(results_dir, "stemming", "cleaned_vocab_counts.json")
+        if not os.path.isfile(cleaned_vocab_path):
+            print('Cleaned and stemmed vocab_counts...')
+            stemming_map = read_json_as_dict(stemming_cleaned_path)
+            create_vocab_counts(df_path, cleaned_vocab_path, stemming_map)
 
 
 if __name__ == "__main__":
