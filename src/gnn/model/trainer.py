@@ -9,7 +9,6 @@ from typing import Any, Dict
 
 from gnn.utils.metrics import accuracy, save_metrics
 from gnn.utils.utils import remove_previous_best
-from shared.utils import mkdir
 
 
 class Trainer(object):
@@ -56,8 +55,8 @@ class Trainer(object):
     def _setup_dirs(self):
         self.ckpt_dir = os.path.join(self.results_dir, 'ckpt')
         self.best_model_dir = os.path.join(self.results_dir, 'best')
-        mkdir(self.ckpt_dir)
-        mkdir(self.best_model_dir)
+        os.makedirs(self.ckpt_dir, exist_ok=True)
+        os.makedirs(self.best_model_dir, exist_ok=True)
 
     def __call__(
         self,

@@ -1,16 +1,18 @@
 import argparse
+import numpy as np
 import os
+import random
 import sys
+import torch
 
 from gnn.dataloading.build_graph import build_graph_from_df
-from gnn.dataloading.loaders import load_datasets, load_train_val_nodes
+from gnn.dataloading.loaders import load_datasets
 from gnn.model.model import create_model
 from gnn.model.trainer import Trainer
 from gnn.utils.utils import get_device, get_vocab_size
-from shared.utils import mkdir, save_cli_options
-
-# TODO: import this from global_constants.py
-RES_DIR = 'results'
+from shared.global_constants import RES_DIR
+from shared.loaders import load_train_val_nodes
+from shared.utils import save_cli_options
 
 
 def parse_arguments(args_to_parse):
@@ -50,6 +52,12 @@ def parse_arguments(args_to_parse):
         required=True,
         help="Path to the SALAMA stemming dictionary",
     )
+    general.add_argument(
+        "--seed",
+        type=int,
+        default=12321,
+        help='Random seed for reproducability'
+    )
 
     training = parser.add_argument_group('Training settings')
     training.add_argument(
@@ -83,15 +91,19 @@ def parse_arguments(args_to_parse):
 
 
 def main(args):
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
     results_dir = os.path.join(RES_DIR, args.name)
-    mkdir(results_dir)
+    os.makedirs(results_dir, exist_ok=True)
     save_cli_options(args, results_dir)
 
     graph_dir = os.path.join(results_dir, args.graph_data_dir)
 
     if not os.path.isdir(graph_dir):
         print('Building graph...')
-        mkdir(graph_dir)
+        os.makedirs(graph_dir, exist_ok=True)
         build_graph_from_df(
             graph_dir=graph_dir,
             df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
