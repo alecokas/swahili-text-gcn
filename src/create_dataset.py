@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from pathlib import Path
 import random
+import re
 import sys
 import torch
 import urllib.request
@@ -131,8 +132,12 @@ def _read_and_format_hsc_as_df(data_dir: str) -> pd.DataFrame:
 
 
 def _read_and_format_zenodo_news_as_df(data_dir: str) -> pd.DataFrame:
-    """ Read the raw HSC data and reformat it into a DataFrame with labels """
+    """
+    Read the raw zenodo swahili news data and reformat it into a DataFrame with labels.
+    Remove Some tweet meta data which is not relevant to the problem.
+    """
     def clean(text: str):
+        text = re.sub('a post shared by.*?pdt|a post shared by.*?pst', '', text)
         return ignore_non_ascii(text.lower()).strip()
 
     path = os.path.join(data_dir, 'zenodo-swahili-news-train.csv')
