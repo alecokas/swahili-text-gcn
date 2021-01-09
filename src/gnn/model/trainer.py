@@ -58,10 +58,10 @@ class Trainer(object):
         self.last_epoch_with_improvement = 1
 
     def _setup_dirs(self):
-            self.ckpt_dir = os.path.join(self.results_dir, 'ckpt')
-            self.best_model_dir = os.path.join(self.results_dir, 'best')
-            os.makedirs(self.ckpt_dir, exist_ok=True)
-            os.makedirs(self.best_model_dir, exist_ok=True)
+        self.ckpt_dir = os.path.join(self.results_dir, 'ckpt')
+        self.best_model_dir = os.path.join(self.results_dir, 'best')
+        os.makedirs(self.ckpt_dir, exist_ok=True)
+        os.makedirs(self.best_model_dir, exist_ok=True)
 
     def __call__(
         self,
