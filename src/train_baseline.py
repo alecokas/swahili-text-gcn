@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 import sys
 
 from baselines.tfidf_lr import build_tfidf_from_df, load_tfidf
-from baselines.avg_fasttext import build_avg_fasttext_from_df
+from baselines.avg_fasttext import build_avg_fasttext_from_df, load_avg_fasttext
 from shared.global_constants import RES_DIR
 from shared.loaders import load_train_val_nodes
 from shared.utils import save_cli_options, save_dict_to_json
@@ -83,7 +83,7 @@ def main(args):
             )
 
         print('Load tf-idf data...')
-        tfidf_features, labels = load_tfidf(preproc_dir)
+        input_features, labels = load_tfidf(preproc_dir)
 
     elif args.model == 'fasttext':
         if not os.path.isdir(preproc_dir):
@@ -95,6 +95,9 @@ def main(args):
                 text_column='document_content',
                 label_column='document_type',
             )
+
+        print('Load average FastText data...')
+        input_features, labels = load_avg_fasttext(preproc_dir)
     else:
         raise Exception(f'Unrecognised model type: {args.model}')
 
@@ -105,10 +108,10 @@ def main(args):
     )
 
     print('Train classifier ...')
-    classifier = LogisticRegression(random_state=1).fit(tfidf_features[train_nodes, :], labels[train_nodes])
+    classifier = LogisticRegression(random_state=1).fit(input_features[train_nodes, :], labels[train_nodes])
     print('Get accuracies...')
-    train_predictions = classifier.predict(tfidf_features[train_nodes, :])
-    val_predictions = classifier.predict(tfidf_features[val_nodes, :])
+    train_predictions = classifier.predict(input_features[train_nodes, :])
+    val_predictions = classifier.predict(input_features[val_nodes, :])
 
     train_accuracy = sum(train_predictions == labels[train_nodes]) / len(train_predictions)
     val_accuracy = sum(val_predictions == labels[val_nodes]) / len(val_predictions)
