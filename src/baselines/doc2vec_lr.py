@@ -1,9 +1,9 @@
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 import os
 from sklearn.feature_extraction.text import CountVectorizer
-from typing import List, Tuple
+from typing import List
 
-from shared.utils import save_dict_to_json, read_json_as_dict, tokenize_prune_stem, write_to_meta
+from shared.utils import read_json_as_dict, tokenize_prune_stem, write_to_meta
 from shared.loaders import load_text_and_labels, save_categorical_labels
 
 
@@ -51,6 +51,7 @@ def build_doc2vec_from_df(
 
     word_vector_map = doc2vec_model.wv
     print(f'Our vocabulary has {len(word_vector_map)} words in it')
+    print(word_vector_map)
 
     # Save and meta-data to disk
     write_to_meta(
