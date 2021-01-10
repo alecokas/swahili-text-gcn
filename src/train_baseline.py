@@ -7,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 import sys
 
 from baselines.tfidf_lr import build_tfidf_from_df, load_tfidf
+from baselines.avg_fasttext import build_avg_fasttext_from_df
 from shared.global_constants import RES_DIR
 from shared.loaders import load_train_val_nodes
 from shared.utils import save_cli_options, save_dict_to_json

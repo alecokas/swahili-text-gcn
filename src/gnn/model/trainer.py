@@ -98,9 +98,11 @@ class Trainer(object):
                         if epoch_num > self.last_epoch_with_improvement + self.early_stopping_epochs:
                             note = f'Breaking on epoch {epoch_num} after no improvement since epoch {self.last_epoch_with_improvement}'
                             print(note)
-                            save_training_notes(file_path=os.path.join(self.results_dir, 'training-notes.jsonl'),
-                                       epoch_num=epoch_num,
-                                       note=note)
+                            save_training_notes(
+                                file_path=os.path.join(self.results_dir, 'training-notes.jsonl'),
+                                epoch_num=epoch_num,
+                                note=note,
+                            )
 
                             break
 
@@ -108,10 +110,7 @@ class Trainer(object):
                     # if we haven't validated, create an empt val metric dict
                     val_metrics = {'val loss': None}
 
-                t.set_postfix(
-                    train_loss=train_metrics['train loss'],
-                    val_loss=val_metrics['val loss']
-                )
+                t.set_postfix(train_loss=train_metrics['train loss'], val_loss=val_metrics['val loss'])
                 t.update()
 
         return None
