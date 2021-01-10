@@ -5,8 +5,9 @@ import shutil
 from sklearn.feature_extraction.text import CountVectorizer
 from typing import List
 
-from shared.utils import save_dict_to_json, read_json_as_dict, tokenize_prune_stem, write_to_meta
+from shared.global_constants import RES_DIR
 from shared.loaders import load_text_and_labels, save_categorical_labels
+from shared.utils import read_json_as_dict, tokenize_prune_stem, write_to_meta
 
 
 def build_avg_fasttext_from_df(
@@ -26,12 +27,27 @@ def build_avg_fasttext_from_df(
     document_list, labels = load_text_and_labels(df_path, text_column, label_column)
     save_categorical_labels(save_dir, labels, as_numpy=True)
 
+    # Tokenize
     cv = CountVectorizer(tokenizer=lambda text: tokenize_prune_stem(text, stemming_map=stemming_map))
     cv_tokenizer = cv.build_tokenizer()
-    print(document_list[0])
-
-    ft_model = _load_pretrained_swahili_fasttext()
+    document_list = [cv_tokenizer(document) for document in document_list]
+    # Load FastText and generate average embeddings
+    ft_model = _load_pretrained_swahili_fasttext(RES_DIR)
     avg_ft_document_embeddings = _generate_avg_ft_document_embedding(ft_model, document_list)
+    np.save(os.path.join(save_dir, 'ft-embeddings.npy'), avg_ft_document_embeddings)
+
+    # Printouts
+    num_docs = avg_ft_document_embeddings.shape[0]
+    dims = avg_ft_document_embeddings.shape[1]
+    print(f'{num_docs} documents have been embedded into {dims} dims')
+    # Save meta-data to disk
+    write_to_meta(
+        data_meta_path=os.path.join(save_dir, 'meta.json'),
+        key_val={
+            'embedding_dims': dims,
+            'num_docs': len(document_list),
+        },
+    )
 
 
 def _load_pretrained_swahili_fasttext(save_location: str):

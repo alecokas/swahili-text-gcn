@@ -34,7 +34,7 @@ def build_tfidf_from_df(save_dir: str, df_path: str, stemming_map_path: str, tex
 
     save_dict_to_json(token_to_int_vocab_map, os.path.join(save_dir, 'vocab_map.json'))
 
-    # Save td-idf, labels, and meta-data to disk
+    # Save and meta-data to disk
     write_to_meta(
         data_meta_path=os.path.join(save_dir, 'meta.json'),
         key_val={
