@@ -2,6 +2,9 @@ from collections import Counter
 import os
 from random import shuffle, sample
 import torch
+from typing import List
+
+from shared.utils import save_dict_to_json
 
 
 def create_train_val_split(
@@ -41,14 +44,8 @@ def _create_balanced_val_split(results_dir: str, node_labels: torch.LongTensor, 
     ) == total_num_nodes, f'Not all indices are included in the split: \
         Expected {len(train_indices) + len(val_indices)} == {total_num_nodes}'
 
-    # Check the subset class distribution
-    train_labels = node_labels[train_indices].tolist()
-    val_labels = node_labels[val_indices].tolist()
-    print(f'Training set split: {Counter(train_labels)}')
-    print(f'Validation set split: {Counter(val_labels)}')
-
-    torch.save(torch.LongTensor(train_labels), os.path.join(results_dir, 'train-indices.pt'))
-    torch.save(torch.LongTensor(val_labels), os.path.join(results_dir, 'val-indices.pt'))
+    _subset_distribution(node_labels, train_indices, val_indices, results_dir)
+    _save_indices(train_indices, val_indices, results_dir)
 
 
 def _create_uniformly_sampled_split(train_dir: str, node_labels: torch.LongTensor, train_ratio: float) -> None:
@@ -65,11 +62,22 @@ def _create_uniformly_sampled_split(train_dir: str, node_labels: torch.LongTenso
     ) == total_num_nodes, f'Not all indices are included in the split: \
         Expected {len(train_indices) + len(val_indices)} == {total_num_nodes}'
 
-    # Check the subset class distribution
+    _subset_distribution(node_labels, train_indices, val_indices, train_dir)
+    _save_indices(train_indices, val_indices, train_dir)
+
+
+def _subset_distribution(
+    node_labels: torch.LongTensor, train_indices: List[int], val_indices: List[int], results_dir: str
+) -> None:
+    """ Check the subset class distribution and save indices """
     train_labels = node_labels[train_indices].tolist()
     val_labels = node_labels[val_indices].tolist()
-    print(f'Training set split: {Counter(train_labels)}')
+    print(f'Training set split: {dict(Counter(train_labels))}')
     print(f'Validation set split: {Counter(val_labels)}')
+    save_dict_to_json(dict(Counter(train_labels)), os.path.join(results_dir, 'train-label-dist.json'))
+    save_dict_to_json(dict(Counter(val_labels)), os.path.join(results_dir, 'val-label-dist.json'))
 
-    torch.save(torch.LongTensor(train_indices), os.path.join(train_dir, 'train-indices.pt'))
-    torch.save(torch.LongTensor(val_indices), os.path.join(train_dir, 'val-indices.pt'))
+
+def _save_indices(train_labels: torch.LongTensor, val_labels: torch.LongTensor, results_dir: str) -> None:
+    torch.save(torch.LongTensor(train_labels), os.path.join(results_dir, 'train-indices.pt'))
+    torch.save(torch.LongTensor(val_labels), os.path.join(results_dir, 'val-indices.pt'))
