@@ -7,7 +7,7 @@ from shared.utils import save_dict_to_json, read_json_as_dict, tokenize_prune_st
 from shared.loaders import load_text_and_labels, save_categorical_labels
 
 
-def build_tfidf_from_df(
+def build_doc2vec_from_df(
     save_dir: str,
     df_path: str,
     stemming_map_path: str,
