@@ -2,6 +2,7 @@ import fasttext.util
 import numpy as np
 import os
 import shutil
+from sklearn.feature_extraction.text import CountVectorizer
 from typing import List
 
 from shared.utils import save_dict_to_json, read_json_as_dict, tokenize_prune_stem, write_to_meta
@@ -25,7 +26,9 @@ def build_avg_fasttext_from_df(
     document_list, labels = load_text_and_labels(df_path, text_column, label_column)
     save_categorical_labels(save_dir, labels, as_numpy=True)
 
-    tokenize_prune_stem(text, stemming_map=stemming_map)
+    cv = CountVectorizer(tokenizer=lambda text: tokenize_prune_stem(text, stemming_map=stemming_map))
+    cv_tokenizer = cv.build_tokenizer()
+    print(document_list[0])
 
     ft_model = _load_pretrained_swahili_fasttext()
     avg_ft_document_embeddings = _generate_avg_ft_document_embedding(ft_model, document_list)
