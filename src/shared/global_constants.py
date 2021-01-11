@@ -1,3 +1,6 @@
+import os
+
+
 # Stop words taken from: https://github.com/WorldBrain/remove-stopwords/blob/master/lib/stopwords_sw.js
 STOP_WORDS = set(
     [
@@ -80,3 +83,5 @@ STOP_WORDS = set(
 
 RES_DIR = 'results'
 DATA_DIR = 'data'
+# NOTE: You need to move your ground truth data split directory to this location manually
+DATA_SPLIT_DIR = os.path.join(DATA_DIR, 'truth-data-split')
