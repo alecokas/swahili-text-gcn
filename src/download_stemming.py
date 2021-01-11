@@ -13,7 +13,14 @@ from collections import Counter
 
 from shared.global_constants import RES_DIR
 from shared.loaders import load_text_and_labels
-from shared.utils import append_to_jsonl, save_dict_to_json, read_json_as_dict, tokenize_prune, tokenize_prune_stem
+from shared.utils import (
+    append_to_jsonl,
+    save_dict_to_json,
+    read_json_as_dict,
+    tokenize_prune,
+    tokenize_prune_stem,
+    save_cli_options,
+)
 from preprocessing.stemming import create_stemming_map
 
 
@@ -147,15 +154,16 @@ def query_word(stemming_download_path: str, word: str) -> None:
 
 
 def main(args):
-    number_to_add = args.number_to_add
-    count_threshold = args.count_threshold
+    """ Entry point for generating a clean stemming map """
     results_dir = os.path.join(RES_DIR, args.results_dir)
+    os.makedirs(results_dir, exist_ok=True)
+
     vocab_counts_path = os.path.join(results_dir, "stemming", "vocab_counts.json")
     stemming_dir = os.path.join(results_dir, "stemming")
     df_path = os.path.join(RES_DIR, args.input_data_dir, "dataset.csv")
-
-    os.makedirs(results_dir, exist_ok=True)
     stemming_download_path, stemming_cleaned_path = setup_dir(stemming_dir)
+
+    save_cli_options(args, results_dir)
 
     if not os.path.isfile(vocab_counts_path):
         create_vocab_counts(df_path, vocab_counts_path)
@@ -163,7 +171,9 @@ def main(args):
 
     done_words = get_done_words(stemming_download_path)
 
-    words_above_threshold, words_to_add = get_words_to_add(vocab_counts, done_words, number_to_add, count_threshold)
+    words_above_threshold, words_to_add = get_words_to_add(
+        vocab_counts, done_words, args.number_to_add, args.count_threshold
+    )
 
     print(f'Number of words to add: {len(words_to_add)}')
     if len(words_to_add) > 0:
