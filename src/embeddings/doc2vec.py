@@ -10,10 +10,15 @@ from typing import List, Tuple
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 
-def read_and_format_docs(df_path: str, text_column: str) -> List[TaggedDocument]:
+def _read_and_format_tagged_docs(
+    df_path: str, text_column: str, label_column: str
+) -> Tuple[List[TaggedDocument], List[str]]:
     dataset_df = pd.read_csv(df_path, sep=';')
     docs_list = dataset_df[text_column].values.tolist()
-    return [TaggedDocument(doc, [i]) for i, doc in enumerate(docs_list)]
+    docs_list = [TaggedDocument(doc, [i]) for i, doc in enumerate(docs_list)]
+    labels = dataset_df[label_column].values.tolist()
+    assert len(labels) == len(docs_list), 'The number of labels and docs should match'
+    return docs_list, labels
 
 
 def separate_into_subsets(
@@ -30,7 +35,7 @@ def separate_into_subsets(
 
 
 def train(docs: List[str], feature_dims: int, num_epochs: int) -> Doc2Vec:
-    model = Doc2Vec(vector_size=feature_dims, window=2, min_count=3, workers=4, epochs=num_epochs)
+    model = Doc2Vec(vector_size=feature_dims, window=2, min_count=2, workers=4, epochs=num_epochs)
     model.build_vocab(docs)
     model.train(docs, total_examples=model.corpus_count, epochs=num_epochs)
     return model
