@@ -7,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 import sys
 
 from baselines.tfidf_lr import build_tfidf_from_df, load_tfidf
+from baselines.avg_fasttext import build_avg_fasttext_from_df, load_avg_fasttext
 from shared.global_constants import RES_DIR
 from shared.loaders import load_train_val_nodes
 from shared.utils import save_cli_options, save_dict_to_json
@@ -33,6 +34,13 @@ def parse_arguments(args_to_parse):
         type=str,
         required=True,
         help="Path to the SALAMA stemming dictionary",
+    )
+    general.add_argument(
+        '--model',
+        type=str,
+        default='tf-idf',
+        choices=['tf-idf', 'doc2vec', 'fasttext'],
+        help='Select the model type to use before feeding into a logistic regression layer'
     )
     general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
 
@@ -63,18 +71,35 @@ def main(args):
 
     preproc_dir = os.path.join(results_dir, 'preproc')
 
-    if not os.path.isdir(preproc_dir):
-        os.makedirs(preproc_dir, exist_ok=True)
-        build_tfidf_from_df(
-            save_dir=preproc_dir,
-            df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
-            stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
-            text_column='document_content',
-            label_column='document_type',
-        )
+    if args.model == 'tf-idf':
+        if not os.path.isdir(preproc_dir):
+            os.makedirs(preproc_dir, exist_ok=True)
+            build_tfidf_from_df(
+                save_dir=preproc_dir,
+                df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
+                stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
+                text_column='document_content',
+                label_column='document_type',
+            )
 
-    print('Load data...')
-    tfidf_features, labels = load_tfidf(preproc_dir)
+        print('Load tf-idf data...')
+        input_features, labels = load_tfidf(preproc_dir)
+
+    elif args.model == 'fasttext':
+        if not os.path.isdir(preproc_dir):
+            os.makedirs(preproc_dir, exist_ok=True)
+            build_avg_fasttext_from_df(
+                save_dir=preproc_dir,
+                df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
+                stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
+                text_column='document_content',
+                label_column='document_type',
+            )
+
+        print('Load average FastText data...')
+        input_features, labels = load_avg_fasttext(preproc_dir)
+    else:
+        raise Exception(f'Unrecognised model type: {args.model}')
 
     train_nodes, val_nodes = load_train_val_nodes(
         preproc_dir=os.path.join(RES_DIR, args.input_data_dir),
@@ -83,10 +108,10 @@ def main(args):
     )
 
     print('Train classifier ...')
-    classifier = LogisticRegression(random_state=1).fit(tfidf_features[train_nodes, :], labels[train_nodes])
+    classifier = LogisticRegression(random_state=1).fit(input_features[train_nodes, :], labels[train_nodes])
     print('Get accuracies...')
-    train_predictions = classifier.predict(tfidf_features[train_nodes, :])
-    val_predictions = classifier.predict(tfidf_features[val_nodes, :])
+    train_predictions = classifier.predict(input_features[train_nodes, :])
+    val_predictions = classifier.predict(input_features[val_nodes, :])
 
     train_accuracy = sum(train_predictions == labels[train_nodes]) / len(train_predictions)
     val_accuracy = sum(val_predictions == labels[val_nodes]) / len(val_predictions)

@@ -2,12 +2,15 @@ import numpy as np
 import os
 from scipy.sparse import csr_matrix, save_npz, load_npz
 from sklearn.feature_extraction.text import TfidfVectorizer
+from typing import Tuple
 
 from shared.utils import save_dict_to_json, read_json_as_dict, tokenize_prune_stem, write_to_meta
 from shared.loaders import load_text_and_labels, save_categorical_labels
 
 
-def build_tfidf_from_df(save_dir: str, df_path: str, stemming_map_path: str, text_column: str, label_column: str):
+def build_tfidf_from_df(
+    save_dir: str, df_path: str, stemming_map_path: str, text_column: str, label_column: str
+) -> None:
     if not os.path.isfile(df_path):
         raise FileNotFoundError(
             f'{df_path} could not be found.\
@@ -34,7 +37,7 @@ def build_tfidf_from_df(save_dir: str, df_path: str, stemming_map_path: str, tex
 
     save_dict_to_json(token_to_int_vocab_map, os.path.join(save_dir, 'vocab_map.json'))
 
-    # Save td-idf, labels, and meta-data to disk
+    # Save and meta-data to disk
     write_to_meta(
         data_meta_path=os.path.join(save_dir, 'meta.json'),
         key_val={
@@ -44,7 +47,7 @@ def build_tfidf_from_df(save_dir: str, df_path: str, stemming_map_path: str, tex
     )
 
 
-def load_tfidf(preproc_dir: str) -> csr_matrix:
+def load_tfidf(preproc_dir: str) -> Tuple[csr_matrix, np.ndarray]:
     tf_idf = load_npz(os.path.join(preproc_dir, 'tf-idf.npz'))
     labels = np.load(os.path.join(preproc_dir, 'labels.npy'))
     return tf_idf, labels

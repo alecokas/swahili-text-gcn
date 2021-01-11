@@ -8,7 +8,7 @@ from typing import List, Tuple
 from shared.utils import save_dict_to_json
 
 
-def load_text_and_labels(df_path: str, text_column: str, label_column: str) -> Tuple[List[List[str]], List[str]]:
+def load_text_and_labels(df_path: str, text_column: str, label_column: str) -> Tuple[List[str], List[str]]:
     """
     Load the CSV from file, extract the column we want along with the corresponding labels.
     """
