@@ -48,7 +48,7 @@ def parse_arguments(args_to_parse):
         required=True,
         help="Path to the SALAMA stemming dictionary",
     )
-    general.add_argument('--seed', type=int, default=12321, help="Random seed for reproducability")
+    general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
 
     training = parser.add_argument_group('Training settings')
     training.add_argument(
@@ -139,7 +139,7 @@ def main(args):
         num_heads=8,
         dropout_ratio=args.dropout_ratio,
         use_bias=False,
-        relu_negative_slope=0.2
+        relu_negative_slope=0.2,
     )
     trainer = Trainer(
         model=text_gcn_model,
