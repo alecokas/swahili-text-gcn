@@ -76,6 +76,6 @@ def _generate_ft_embeddings(ft_model, word_list: List[str]) -> List[np.ndarray]:
 
 
 def load_avg_fasttext(preproc_dir: str) -> Tuple[np.ndarray, np.ndarray]:
-    tf_idf = np.load(os.path.join(preproc_dir, 'ft-embeddings.npy'))
+    ft_embeddings = np.load(os.path.join(preproc_dir, 'ft-embeddings.npy'))
     labels = np.load(os.path.join(preproc_dir, 'labels.npy'))
-    return tf_idf, labels
+    return ft_embeddings, labels
