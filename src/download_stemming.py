@@ -21,7 +21,7 @@ from shared.utils import (
     tokenize_prune_stem,
     save_cli_options,
 )
-from preprocessing.stemming import create_stemming_map
+from preprocessing.stemming import create_stemming_map, remove_stemming_entries_below_count_threshold
 
 
 def parse_arguments(args_to_parse):
@@ -37,6 +37,8 @@ def parse_arguments(args_to_parse):
         default=1000,
         help="Number of words from the vocab to download stemming data",
     )
+    # NOTE: For the --count-threshold option: If the raw stemming data has already been downloaded
+    # with a more lenient threshold, the stemming process will compensate for it in the cleaning stage
     general.add_argument(
         "--count-threshold",
         type=int,
@@ -71,6 +73,7 @@ def setup_dir(stemming_dir: str) -> str:
 def create_vocab_counts(
     df_path: str,
     vocab_counts_path: str,
+    excl_word_count_lower_than: int = 1,
     stemming_map: Optional[Dict[str, str]] = None,
     text_column: str = "document_content",
     label_column: str = "document_type",
@@ -85,9 +88,12 @@ def create_vocab_counts(
     # Create a vocab list sorted by the frequency of each word
     print("Creating vocab with word counts...")
     if stemming_map is None:
-        cv = CountVectorizer(tokenizer=tokenize_prune)
+        cv = CountVectorizer(tokenizer=tokenize_prune, min_df=excl_word_count_lower_than)
     else:
-        cv = CountVectorizer(tokenizer=lambda text: tokenize_prune_stem(text, stemming_map=stemming_map))
+        cv = CountVectorizer(
+            tokenizer=lambda text: tokenize_prune_stem(text, stemming_map=stemming_map),
+            min_df=excl_word_count_lower_than,
+        )
     cv_fit = cv.fit_transform(document_list)
     word_list = cv.get_feature_names()
     # Convert to uint16 to keep the memory requirements down, otherwise approx. 34.3 GiB for Zenodo
@@ -166,7 +172,7 @@ def main(args):
     save_cli_options(args, results_dir)
 
     if not os.path.isfile(vocab_counts_path):
-        create_vocab_counts(df_path, vocab_counts_path)
+        create_vocab_counts(df_path=df_path, vocab_counts_path=vocab_counts_path)
     vocab_counts = load_vocab_counts(vocab_counts_path)
 
     done_words = get_done_words(stemming_download_path)
@@ -184,10 +190,18 @@ def main(args):
         create_stemming_map(stemming_download_path, stemming_cleaned_path)
         # Get the vocab count after the stemming and cleaning process has taken place
         cleaned_vocab_path = os.path.join(results_dir, "stemming", "cleaned_vocab_counts.json")
-        if not os.path.isfile(cleaned_vocab_path):
-            print('Cleaned and stemmed vocab_counts...')
-            stemming_map = read_json_as_dict(stemming_cleaned_path)
-            create_vocab_counts(df_path, cleaned_vocab_path, stemming_map)
+        print('First pass cleaned and stemmed vocab_counts...')
+        stemming_map = read_json_as_dict(stemming_cleaned_path)
+        create_vocab_counts(
+            df_path=df_path,
+            vocab_counts_path=cleaned_vocab_path,
+            excl_word_count_lower_than=args.count_threshold,
+            stemming_map=stemming_map,
+        )
+        print('Second pass at cleaning the stemming vocab_counts...')
+        remove_stemming_entries_below_count_threshold(
+            stemming_cleaned_path, cleaned_vocab_path, threshold=args.count_threshold
+        )
 
 
 if __name__ == "__main__":
