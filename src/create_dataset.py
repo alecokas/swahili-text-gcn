@@ -57,7 +57,10 @@ def parse_arguments(args_to_parse):
         help="Determine how to generate the validation set split if not already saved to disk",
     )
     general.add_argument(
-        '--new-data-split', action='store_false', default=False, help='Use the saved truth dataset split indices'
+        '--new-data-split',
+        action='store_true',
+        default=False,
+        help='Use a new set of dataset split indices or use a previous saved one.',
     )
     general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
     return parser.parse_args(args_to_parse)
@@ -186,7 +189,9 @@ def main(args):
             )
         else:
             if os.path.isdir(DATA_SPLIT_DIR):
-                copy_truth_data_split(data_split_dir=DATA_SPLIT_DIR, results_dir=results_dir, cat_labels=catagorical_labels)
+                copy_truth_data_split(
+                    data_split_dir=DATA_SPLIT_DIR, results_dir=results_dir, cat_labels=catagorical_labels
+                )
             else:
                 raise Exception(f'Expected your truth data split directory at {DATA_SPLIT_DIR}, but found no content')
 
