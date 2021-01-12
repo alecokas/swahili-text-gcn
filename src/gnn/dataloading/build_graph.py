@@ -83,19 +83,18 @@ def build_graph_from_df(
     )
 
 
-def _create_window_contexts(doc_list: List[str], window_size: int, stemming_map: Dict[str, str]) -> List[Set[str]]:
+def _create_window_contexts(doc: str, window_size: int, stemming_map: Dict[str, str]) -> List[Set[str]]:
     """
     NOTE: not all windows will be the same size.
     Specifically windows taken from documents which are shorter than the window size.
     """
     windows = []
-    for doc in doc_list:
-        words = tokenize_prune_stem(doc, stemming_map=stemming_map)
-        if len(words) <= window_size:
-            windows.append(set(words))
-        else:
-            for i in range(len(words) - window_size + 1):
-                windows.append(set(words[i : i + window_size]))
+    words = tokenize_prune_stem(doc, stemming_map=stemming_map)
+    if len(words) <= window_size:
+        windows.append(set(words))
+    else:
+        for i in range(len(words) - window_size + 1):
+            windows.append(set(words[i : i + window_size]))
     return windows
 
 
