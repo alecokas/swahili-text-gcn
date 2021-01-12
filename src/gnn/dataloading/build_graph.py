@@ -44,7 +44,7 @@ def build_graph_from_df(
     print('Word Co-ocurrences...')
     windows = []
     for document in tqdm(document_list, desc='Generating all windows: '):
-        windows.extend(_create_window_contexts(document, window_size, stemming_map_path))
+        windows.extend(_create_window_contexts(document, window_size, stemming_map))
     word_occurence_count_map = _create_word_occurence_count_map(windows)
     word_pair_occurence_count_map = _create_word_pair_occurence_count_map(windows)
 
