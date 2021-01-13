@@ -17,82 +17,82 @@ from shared.utils import save_cli_options
 
 def parse_arguments(args_to_parse):
     """ Parse CLI arguments """
-    parser = argparse.ArgumentParser(description="Train a Text GCN model")
+    parser = argparse.ArgumentParser(description='Train a Text GCN model')
 
-    general = parser.add_argument_group("General settings")
-    general.add_argument("name", type=str, help="The name of the experimental directory - used for saving and loading.")
+    general = parser.add_argument_group('General settings')
+    general.add_argument('name', type=str, help='The name of the experimental directory - used for saving and loading.')
     general.add_argument(
-        "--model", type=str, default="gcn", choices=["gcn", "gat", "spgat"], help="Select a GNN model to use"
+        '--model', type=str, default='gcn', choices=['gcn', 'gat', 'spgat'], help='Select a GNN model to use'
     )
     general.add_argument(
-        "--input-data-dir",
+        '--input-data-dir',
         type=str,
         required=True,
         help="The name of the directory in which we have a our processed corpora (in a DataFrame)",
     )
     general.add_argument(
-        "--graph-data-dir",
+        '--graph-data-dir',
         type=str,
-        default="graph",
+        default='graph',
         help="The name of the directory in which we save the processed graph data - such as the adjacency and labels",
     )
     general.add_argument(
-        "--train-dir",
+        '--train-dir',
         type=str,
-        default="train",
+        default='train',
         help="The name of the subdirectory where we should save training data (losses, metrics, models, etc.)",
     )
     general.add_argument(
-        "--stemmer-path",
+        '--stemmer-path',
         type=str,
         required=True,
         help="Path to the SALAMA stemming dictionary",
     )
-    general.add_argument("--seed", type=int, default=12321, help="Random seed for reproducability")
+    general.add_argument('--seed', type=int, default=12321, help="Random seed for reproducability")
 
-    training = parser.add_argument_group("Training settings")
+    training = parser.add_argument_group('Training settings')
     training.add_argument(
-        "--lr",
+        '--lr',
         type=float,
         default=0.02,
         help="Learning rate",
     )
     training.add_argument(
-        "--dropout-ratio",
+        '--dropout-ratio',
         type=float,
         default=0.5,
-        help="Dropout rate to be applied to all layers",
+        help='Dropout rate to be applied to all layers',
     )
     training.add_argument(
-        "--epochs",
+        '--epochs',
         type=int,
         default=10,
         help="The number of epochs to run",
     )
     training.add_argument(
-        "--use-gpu", action="store_true", default=False, help="Set this parameter to run on GPU (cuda)"
+        '--use-gpu', action='store_true', default=False, help="Set this parameter to run on GPU (cuda)"
     )
     training.add_argument(
-        "--train-set-label-proportion",
+        '--train-set-label-proportion',
         type=float,
         default=0.2,
-        help="Ratio of nodes in the training set which we keep labelled",
+        help='Ratio of nodes in the training set which we keep labelled',
     )
     training.add_argument(
-        "--early-stopping-epochs",
+        '--early-stopping-epochs',
         type=int,
         default=10,
         help="The number of epochs to stop after if there is no improvement in the metric of interest",
     )
     training.add_argument(
-        "--disable-early-stopping",
-        action="store_true",
+        '--disable-early-stopping',
+        action='store_true',
         default=False,
         help="Whether to disable early stopping. Default is False",
     )
     training.add_argument(
-        "--keep-all-checkpoints",
-        action="store_true",
+        '--keep-all-checkpoints',
+        action='store_true',
         default=False,
         help="Whether to keep all model checkpoints while training. Default is False, in which case only the most recent checkpoint will be kept",
     )
@@ -111,18 +111,18 @@ def main(args):
     graph_dir = os.path.join(results_dir, args.graph_data_dir)
 
     if not os.path.isdir(graph_dir):
-        print("Building graph...")
+        print('Building graph...')
         os.makedirs(graph_dir, exist_ok=True)
         build_graph_from_df(
             graph_dir=graph_dir,
-            df_path=os.path.join(RES_DIR, args.input_data_dir, "dataset.csv"),
+            df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
             stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
-            text_column="document_content",
-            label_column="document_type",
+            text_column='document_content',
+            label_column='document_type',
             window_size=20,
         )
 
-    print("Load and normalise...")
+    print('Load and normalise...')
     adjacency, input_features, labels = load_datasets(graph_dir)
 
     train_nodes, val_nodes = load_train_val_nodes(
@@ -156,7 +156,7 @@ def main(args):
         early_stopping_epochs=args.early_stopping_epochs,
         autodelete_checkpoints=not args.keep_all_checkpoints,
     )
-    print("Training...")
+    print('Training...')
     trainer(
         input_features=input_features,
         adjacency=adjacency,
@@ -164,9 +164,9 @@ def main(args):
         num_epochs=args.epochs,
     )
 
-    print("Complete!")
+    print('Complete!')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     args = parse_arguments(sys.argv[1:])
     main(args)

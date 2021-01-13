@@ -40,11 +40,11 @@ class Trainer(object):
 
         assert (
             len(set(train_nodes).intersection(set(val_nodes))) == 0
-        ), f"There are overlapping nodes: {len(set(train_nodes).intersection(set(val_nodes)))}"
+        ), f'There are overlapping nodes: {len(set(train_nodes).intersection(set(val_nodes)))}'
         self.train_nodes = train_nodes
         self.val_nodes = val_nodes
         self.vocab_size = vocab_size
-        print(f"Vocabulary offset: {vocab_size}")
+        print(f'Vocabulary offset: {vocab_size}')
 
         self.results_dir = results_dir
         self.validate_every_n_epochs = validate_every_n_epochs
@@ -55,14 +55,14 @@ class Trainer(object):
         self.has_saved_metric = False
         self._setup_dirs()
 
-        self.metric_of_interest = "val loss"
+        self.metric_of_interest = 'val loss'
         self.best_metric = math.inf
         self.last_epoch_with_improvement = 1
         self.autodelete_checkpoints = autodelete_checkpoints
 
     def _setup_dirs(self):
-        self.ckpt_dir = os.path.join(self.results_dir, "ckpt")
-        self.best_model_dir = os.path.join(self.results_dir, "best")
+        self.ckpt_dir = os.path.join(self.results_dir, 'ckpt')
+        self.best_model_dir = os.path.join(self.results_dir, 'best')
         os.makedirs(self.ckpt_dir, exist_ok=True)
         os.makedirs(self.best_model_dir, exist_ok=True)
 
@@ -73,7 +73,7 @@ class Trainer(object):
         labels: torch.LongTensor,
         num_epochs: int,
     ):
-        with trange(num_epochs, desc="Training progress: ") as t:
+        with trange(num_epochs, desc='Training progress: ') as t:
             for epoch_num in range(1, num_epochs + 1):
                 train_metrics = self._train_epoch(input_features, adjacency, labels)
 
@@ -81,7 +81,7 @@ class Trainer(object):
                     # Validate and save metrics
                     val_metrics = self._val_epoch(input_features, adjacency, labels)
                     save_metrics(
-                        file_path=os.path.join(self.results_dir, "train-log.jsonl"),
+                        file_path=os.path.join(self.results_dir, 'train-log.jsonl'),
                         epoch_num=epoch_num,
                         train_metrics=train_metrics,
                         val_metrics=val_metrics,
@@ -99,10 +99,10 @@ class Trainer(object):
                         if self._is_best(val_metrics):
                             self.last_epoch_with_improvement = epoch_num
                         if epoch_num > self.last_epoch_with_improvement + self.early_stopping_epochs:
-                            note = f"Breaking on epoch {epoch_num} after no improvement since epoch {self.last_epoch_with_improvement}"
+                            note = f'Breaking on epoch {epoch_num} after no improvement since epoch {self.last_epoch_with_improvement}'
                             print(note)
                             save_training_notes(
-                                file_path=os.path.join(self.results_dir, "training-notes.jsonl"),
+                                file_path=os.path.join(self.results_dir, 'training-notes.jsonl'),
                                 epoch_num=epoch_num,
                                 note=note,
                             )
@@ -111,9 +111,9 @@ class Trainer(object):
 
                 else:
                     # if we haven't validated, create an empt val metric dict
-                    val_metrics = {"val loss": None}
+                    val_metrics = {'val loss': None}
 
-                t.set_postfix(train_loss=train_metrics["train loss"], val_loss=val_metrics["val loss"])
+                t.set_postfix(train_loss=train_metrics['train loss'], val_loss=val_metrics['val loss'])
                 t.update()
 
         return None
@@ -162,22 +162,22 @@ class Trainer(object):
         """ Checkpoint to resume training """
         torch.save(
             {
-                "epoch": epoch,
-                "model_state_dict": self.model.state_dict(),
-                "optimiser_state_dict": self.optimiser.state_dict(),
-                "loss": self.loss_fn,
+                'epoch': epoch,
+                'model_state_dict': self.model.state_dict(),
+                'optimiser_state_dict': self.optimiser.state_dict(),
+                'loss': self.loss_fn,
             },
-            os.path.join(self.ckpt_dir, f"model-{epoch}.pt"),
+            os.path.join(self.ckpt_dir, f'model-{epoch}.pt'),
         )
         # delete exists checkpoints (except for the one we just saved)
         if self.autodelete_checkpoints:
-            checkpoints = glob(os.path.join(self.ckpt_dir, f"model-*.pt"))
-            old_checkpoints = [checkpoint for checkpoint in checkpoints if f"model-{epoch}" not in checkpoint]
+            checkpoints = glob(os.path.join(self.ckpt_dir, f'model-*.pt'))
+            old_checkpoints = [checkpoint for checkpoint in checkpoints if f'model-{epoch}' not in checkpoint]
             [os.remove(old_checkpoint) for old_checkpoint in old_checkpoints]
 
     def _save_best_model(self, epoch: int) -> None:
         """ Save best model for inference """
-        torch.save(self.model.state_dict(), os.path.join(self.best_model_dir, f"model-{epoch}.pt"))
+        torch.save(self.model.state_dict(), os.path.join(self.best_model_dir, f'model-{epoch}.pt'))
         remove_previous_best(self.best_model_dir, epoch)
 
     def _is_best(self, val_metrics: Dict[str, float]) -> bool:
