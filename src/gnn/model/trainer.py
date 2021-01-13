@@ -141,7 +141,7 @@ class Trainer(object):
         # print(f'train loss: {train_loss}')
 
         duration = time.time() - start_time
-        return {"train epoch duration": duration, "train loss": train_loss.item()}
+        return {'train epoch duration': duration, 'train loss': train_loss.item()}
 
     def _val_epoch(
         self,
@@ -156,7 +156,7 @@ class Trainer(object):
         # print(f'val loss: {val_loss}')
 
         val_accuracy = accuracy(logits[self.val_nodes + self.vocab_size], labels[self.val_nodes], is_logit_output=True)
-        return {"val loss": val_loss.item(), "F-score": None, "Accuracy": val_accuracy}
+        return {'val loss': val_loss.item(), 'F-score': None, 'Accuracy': val_accuracy}
 
     def _checkpoint_model(self, epoch: int) -> None:
         """ Checkpoint to resume training """
@@ -173,7 +173,8 @@ class Trainer(object):
         if self.autodelete_checkpoints:
             checkpoints = glob(os.path.join(self.ckpt_dir, f'model-*.pt'))
             old_checkpoints = [checkpoint for checkpoint in checkpoints if f'model-{epoch}' not in checkpoint]
-            [os.remove(old_checkpoint) for old_checkpoint in old_checkpoints]
+            for old_checkpoint in old_checkpoints:
+                os.remove(old_checkpoint)
 
     def _save_best_model(self, epoch: int) -> None:
         """ Save best model for inference """
@@ -181,7 +182,7 @@ class Trainer(object):
         remove_previous_best(self.best_model_dir, epoch)
 
     def _is_best(self, val_metrics: Dict[str, float]) -> bool:
-        if "loss" in self.metric_of_interest:
+        if 'loss' in self.metric_of_interest:
             if val_metrics[self.metric_of_interest] <= self.best_metric:
                 self.best_metric = val_metrics[self.metric_of_interest]
                 return True

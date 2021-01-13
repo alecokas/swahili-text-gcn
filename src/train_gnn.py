@@ -43,7 +43,7 @@ def parse_arguments(args_to_parse):
         help="The name of the subdirectory where we should save training data (losses, metrics, models, etc.)",
     )
     general.add_argument(
-        '--stemmer-path',
+        "--stemmer-path",
         type=str,
         required=True,
         help="Path to the SALAMA stemming dictionary",
@@ -61,7 +61,7 @@ def parse_arguments(args_to_parse):
         '--dropout-ratio',
         type=float,
         default=0.5,
-        help='Dropout rate to be applied to all layers',
+        help="Dropout rate to be applied to all layers",
     )
     training.add_argument(
         '--epochs',
@@ -70,7 +70,7 @@ def parse_arguments(args_to_parse):
         help="The number of epochs to run",
     )
     training.add_argument(
-        '--use-gpu', action='store_true', default=False, help="Set this parameter to run on GPU (cuda)"
+        '--use-gpu', action='store_true', default=False, help='Set this parameter to run on GPU (cuda)'
     )
     training.add_argument(
         '--train-set-label-proportion',
@@ -139,7 +139,7 @@ def main(args):
         num_heads=8,
         dropout_ratio=args.dropout_ratio,
         use_bias=False,
-        relu_negative_slope=0.2,
+        relu_negative_slope=0.2
     )
     trainer = Trainer(
         model=text_gcn_model,
