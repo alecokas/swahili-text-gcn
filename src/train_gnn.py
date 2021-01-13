@@ -94,7 +94,8 @@ def parse_arguments(args_to_parse):
         '--keep-all-checkpoints',
         action='store_true',
         default=False,
-        help="Whether to keep all model checkpoints while training. Default is False, in which case only the most recent checkpoint will be kept",
+        help="Whether to keep all model checkpoints while training. \
+            Default is False, in which case only the most recent checkpoint will be kept",
     )
     return parser.parse_args(args_to_parse)
 
