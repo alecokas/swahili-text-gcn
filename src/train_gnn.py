@@ -20,13 +20,9 @@ def parse_arguments(args_to_parse):
     parser = argparse.ArgumentParser(description='Train a Text GCN model')
 
     general = parser.add_argument_group('General settings')
-    general.add_argument('name', type=str, help="The name of the experimental directory - used for saving and loading.")
+    general.add_argument('name', type=str, help='The name of the experimental directory - used for saving and loading.')
     general.add_argument(
-        '--model',
-        type=str,
-        default='gcn',
-        choices=['gcn', 'gat', 'spgat'],
-        help='Select a GNN model to use'
+        '--model', type=str, default='gcn', choices=['gcn', 'gat', 'spgat'], help='Select a GNN model to use'
     )
     general.add_argument(
         '--input-data-dir',
@@ -52,12 +48,7 @@ def parse_arguments(args_to_parse):
         required=True,
         help="Path to the SALAMA stemming dictionary",
     )
-    general.add_argument(
-        "--seed",
-        type=int,
-        default=12321,
-        help='Random seed for reproducability'
-    )
+    general.add_argument('--seed', type=int, default=12321, help="Random seed for reproducability")
 
     training = parser.add_argument_group('Training settings')
     training.add_argument(
@@ -88,7 +79,7 @@ def parse_arguments(args_to_parse):
         help='Ratio of nodes in the training set which we keep labelled',
     )
     training.add_argument(
-        '--early_stopping_epochs',
+        '--early-stopping-epochs',
         type=int,
         default=10,
         help="The number of epochs to stop after if there is no improvement in the metric of interest",
@@ -98,6 +89,12 @@ def parse_arguments(args_to_parse):
         action='store_true',
         default=False,
         help="Whether to disable early stopping. Default is False",
+    )
+    training.add_argument(
+        '--keep-all-checkpoints',
+        action='store_true',
+        default=False,
+        help="Whether to keep all model checkpoints while training. Default is False, in which case only the most recent checkpoint will be kept",
     )
     return parser.parse_args(args_to_parse)
 
@@ -155,8 +152,9 @@ def main(args):
         validate_every_n_epochs=2,
         save_after_n_epochs=0,
         checkpoint_every_n_epochs=2,
-        use_early_stopping = ~args.disable_early_stopping,
-        early_stopping_epochs = args.early_stopping_epochs
+        use_early_stopping=not args.disable_early_stopping,
+        early_stopping_epochs=args.early_stopping_epochs,
+        autodelete_checkpoints=not args.keep_all_checkpoints,
     )
     print('Training...')
     trainer(

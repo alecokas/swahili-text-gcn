@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 from torch.optim import AdamW
 from typing import Any, Dict
+from glob import glob
 
 from gnn.utils.metrics import accuracy, save_metrics
 from gnn.utils.utils import remove_previous_best, save_training_notes
@@ -26,6 +27,7 @@ class Trainer(object):
         checkpoint_every_n_epochs: int,
         use_early_stopping: bool,
         early_stopping_epochs: int,
+        autodelete_checkpoints: bool,
     ):
         self.device = device
         self.model = model
@@ -56,6 +58,7 @@ class Trainer(object):
         self.metric_of_interest = 'val loss'
         self.best_metric = math.inf
         self.last_epoch_with_improvement = 1
+        self.autodelete_checkpoints = autodelete_checkpoints
 
     def _setup_dirs(self):
         self.ckpt_dir = os.path.join(self.results_dir, 'ckpt')
@@ -166,6 +169,12 @@ class Trainer(object):
             },
             os.path.join(self.ckpt_dir, f'model-{epoch}.pt'),
         )
+        # delete exists checkpoints (except for the one we just saved)
+        if self.autodelete_checkpoints:
+            checkpoints = glob(os.path.join(self.ckpt_dir, f'model-*.pt'))
+            old_checkpoints = [checkpoint for checkpoint in checkpoints if f'model-{epoch}' not in checkpoint]
+            for old_checkpoint in old_checkpoints:
+                os.remove(old_checkpoint)
 
     def _save_best_model(self, epoch: int) -> None:
         """ Save best model for inference """
