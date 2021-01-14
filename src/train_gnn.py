@@ -6,6 +6,7 @@ import sys
 import torch
 
 from gnn.dataloading.build_graph import build_graph_from_df
+from gnn.dataloading.input_features import build_bow_input_features
 from gnn.dataloading.loaders import load_datasets
 from gnn.model.model import create_model
 from gnn.model.trainer import Trainer
@@ -23,6 +24,13 @@ def parse_arguments(args_to_parse):
     general.add_argument('name', type=str, help='The name of the experimental directory - used for saving and loading.')
     general.add_argument(
         '--model', type=str, default='gcn', choices=['gcn', 'gat', 'spgat'], help='Select a GNN model to use'
+    )
+    general.add_argument(
+        '--input-features',
+        type=str,
+        default='one-hot',
+        choices=['one-hot', 'text2vec'],
+        help='Select the type of input features to use. The `text2vec` option uses doc2vec and word2vec embeddings.',
     )
     general.add_argument(
         '--input-data-dir',
@@ -114,10 +122,20 @@ def main(args):
     if not os.path.isdir(graph_dir):
         print('Building graph...')
         os.makedirs(graph_dir, exist_ok=True)
+        # if args.input_features:
+        #     build_bow_input_features(
+        #         graph_dir=graph_dir,
+        #         df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
+        #         stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
+        #         text_column='document_content',
+        #         label_column='document_type',
+        #     )
+
         build_graph_from_df(
             graph_dir=graph_dir,
             df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
             stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
+            input_feature_type=args.input_features,
             text_column='document_content',
             label_column='document_type',
             window_size=20,

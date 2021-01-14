@@ -8,23 +8,28 @@ from tqdm import tqdm
 import torch
 from typing import Dict, List, Set, Tuple, Optional
 
+from src.embeddings.doc_features import get_doc2vec_embeddngs
+from src.embeddings.word_features import get_word2vec_embeddngs
 from shared.loaders import load_text_and_labels, save_categorical_labels
-from shared.utils import save_dict_to_json, read_json_as_dict, tokenize_prune_stem, write_to_meta
+from shared.utils import (
+    save_dict_to_json,
+    read_json_as_dict,
+    tokenize_prune_stem,
+    write_to_meta,
+    check_df_and_stemming_paths,
+)
 
 
 def build_graph_from_df(
-    graph_dir: str, df_path: str, stemming_map_path: str, text_column: str, label_column: str, window_size: int
+    graph_dir: str,
+    df_path: str,
+    stemming_map_path: str,
+    input_features_type: str,
+    text_column: str,
+    label_column: str,
+    window_size: int,
 ) -> None:
-    if not os.path.isfile(df_path):
-        raise FileNotFoundError(
-            f'{df_path} could not be found.\
-                Remember that you first need to generate the dataset using the `create_dataset` script'
-        )
-    if not os.path.isfile(stemming_map_path):
-        raise FileNotFoundError(
-            f'{stemming_map_path} could not be found.\
-                Remember that you need to first generate a stemming map using the `download_stemming` script'
-        )
+    check_df_and_stemming_paths(df_path, stemming_map_path)
     stemming_map = read_json_as_dict(stemming_map_path)
     document_list, labels = load_text_and_labels(df_path, text_column, label_column)
     save_categorical_labels(graph_dir, labels)
@@ -68,7 +73,30 @@ def build_graph_from_df(
     print(f'The adjacency has size: {adjacency_shape}')
     del adjacency
 
-    input_features = torch.eye(adjacency_shape[0]).to_sparse()
+    if input_features_type == 'one-hot':
+        input_features = torch.eye(adjacency_shape[0]).to_sparse()
+    elif input_features_type == 'text2vec':
+        # For now, keep these doc2vec settings constant
+        input_doc_features = get_doc2vec_embeddngs(
+            save_dir=graph_dir,
+            document_list=document_list,
+            stemming_map=stemming_map,
+            num_epochs=20,
+            embedding_dimension=300,
+            training_regime=1
+        )
+        input_word_features = get_word2vec_embeddngs(
+            save_dir=graph_dir,
+            document_list=document_list,
+            word_list=word_list,
+            stemming_map=stemming_map,
+            num_epochs=20,
+            embedding_dimension=300,
+            training_regime=1
+        )
+    else:
+        raise TypeError(f'{input_features_type} is not a valid input feature type')
+
     torch.save(input_features, os.path.join(graph_dir, 'input_features.pt'))
     print(f'Input features size: {input_features.shape}')
 
