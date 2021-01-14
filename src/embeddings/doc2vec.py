@@ -35,7 +35,7 @@ def separate_into_subsets(
 
 
 def train(docs: List[str], feature_dims: int, num_epochs: int) -> Doc2Vec:
-    model = Doc2Vec(vector_size=feature_dims, window=2, min_count=2, workers=4, epochs=num_epochs)
+    model = Doc2Vec(vector_size=feature_dims, min_count=2, workers=4, epochs=num_epochs)
     model.build_vocab(docs)
     model.train(docs, total_examples=model.corpus_count, epochs=num_epochs)
     return model
