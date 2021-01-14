@@ -52,6 +52,7 @@ def parse_arguments(args_to_parse):
         default=0.2,
         help='Ratio of nodes in the training set which we keep labelled',
     )
+    # CLI options of the form `--d-XXXX` pertain to doc2vec
     training.add_argument(
         '--d-epochs',
         type=int,
