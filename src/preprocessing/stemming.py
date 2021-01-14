@@ -62,9 +62,7 @@ def _merge_laughs_words(stemming_map: Dict[str, str]) -> Dict[str, str]:
     return stemming_map
 
 
-def remove_stemming_entries_below_count_threshold(
-    cleaned_path_name: str, cleaned_vocab_path: str, threshold: int
-) -> None:
+def remove_stemming_entries_below_count_threshold(cleaned_path_name: str, cleaned_vocab_path: str) -> None:
     """ Overwrites the file at cleaned_path_name """
     stemming_map = read_json_as_dict(cleaned_path_name)
     vocab_count_map = read_json_as_dict(cleaned_vocab_path)
