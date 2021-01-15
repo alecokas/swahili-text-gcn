@@ -52,21 +52,21 @@ def parse_arguments(args_to_parse):
         default=0.2,
         help='Ratio of nodes in the training set which we keep labelled',
     )
-    # CLI options of the form `--d-XXXX` pertain to doc2vec
+    # CLI options of the form `--doc2vec-XXXX` pertain to doc2vec
     training.add_argument(
-        '--d-epochs',
+        '--doc2vec-epochs',
         type=int,
         default=10,
         help="The number of epochs to run when training Doc2Vec",
     )
     training.add_argument(
-        '--d-feature-dims',
+        '--doc2vec-feature-dims',
         type=int,
         default=300,
         help="The Doc2vec feature vector size",
     )
     training.add_argument(
-        '--d-dm',
+        '--doc2vec-dm',
         type=int,
         choices=[0, 1],
         default=1,
@@ -123,9 +123,9 @@ def main(args):
                 stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
                 text_column='document_content',
                 label_column='document_type',
-                training_regime=args.d_dm,
-                embedding_dimension=args.d_feature_dims,
-                num_epochs=args.d_epochs,
+                training_regime=args.doc2vec_dm,
+                embedding_dimension=args.doc2vec_feature_dims,
+                num_epochs=args.doc2vec_epochs,
             )
 
         print('Load Doc2vec data...')

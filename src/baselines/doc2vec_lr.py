@@ -75,7 +75,7 @@ def build_doc2vec_from_df(
 
 
 def _train_doc2vec(docs: List[TaggedDocument], feature_dims: int, num_epochs: int, training_regime: int) -> Doc2Vec:
-    model = Doc2Vec(vector_size=feature_dims, window=2, min_count=2, workers=4, epochs=num_epochs, dm=training_regime)
+    model = Doc2Vec(vector_size=feature_dims, window=5, min_count=2, workers=4, epochs=num_epochs, dm=training_regime)
     model.build_vocab(docs)
     model.train(docs, total_examples=model.corpus_count, epochs=num_epochs)
     return model
