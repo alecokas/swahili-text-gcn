@@ -1,6 +1,7 @@
 from collections import Counter
 import os
 from random import shuffle, sample
+import shutil
 import torch
 from typing import List
 
@@ -16,6 +17,18 @@ def create_train_val_split(
         _create_uniformly_sampled_split(results_dir, node_labels, train_ratio)
     else:
         raise Exception(f'{val_split_type} is not a valid val_split_type')
+
+
+def copy_truth_data_split(data_split_dir: str, results_dir: str, cat_labels: torch.LongTensor) -> None:
+    # First check that the number of labels add up
+    num_train_nodes = len(torch.load(os.path.join(data_split_dir, 'train-indices.pt')).tolist())
+    num_val_nodes = len(torch.load(os.path.join(data_split_dir, 'val-indices.pt')).tolist())
+    num_labels = len(cat_labels.tolist())
+    assert num_train_nodes + num_val_nodes == num_labels, f'Expected {num_train_nodes + num_val_nodes} == {num_labels}'
+    # Copy to new directory
+    print(f'Copying train and val indices from {data_split_dir}')
+    shutil.copy(os.path.join(data_split_dir, 'train-indices.pt'), os.path.join(results_dir, 'train-indices.pt'))
+    shutil.copy(os.path.join(data_split_dir, 'val-indices.pt'), os.path.join(results_dir, 'val-indices.pt'))
 
 
 def _create_balanced_val_split(results_dir: str, node_labels: torch.LongTensor, train_ratio: float) -> None:

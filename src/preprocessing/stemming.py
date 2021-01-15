@@ -2,7 +2,7 @@ import re
 from typing import Dict, List
 
 from preprocessing.text_stripper import ignore_non_ascii
-from shared.utils import read_jsonl, save_dict_to_json
+from shared.utils import read_json_as_dict, read_jsonl, save_dict_to_json
 
 
 def create_stemming_map(raw_path_name: str, cleaned_path_name: str) -> None:
@@ -60,3 +60,13 @@ def _merge_laughs_words(stemming_map: Dict[str, str]) -> Dict[str, str]:
     for laugh_word in laugh_words:
         stemming_map[laugh_word] = 'laugh'
     return stemming_map
+
+
+def remove_stemming_entries_below_count_threshold(cleaned_path_name: str, cleaned_vocab_path: str) -> None:
+    """ Overwrites the file at cleaned_path_name """
+    stemming_map = read_json_as_dict(cleaned_path_name)
+    vocab_count_map = read_json_as_dict(cleaned_vocab_path)
+    stemming_map = {
+        raw_word: stemmed_word for raw_word, stemmed_word in stemming_map.items() if stemmed_word in vocab_count_map
+    }
+    save_dict_to_json(stemming_map, cleaned_path_name)

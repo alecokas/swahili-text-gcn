@@ -11,9 +11,9 @@ import urllib.request
 import zipfile
 
 from preprocessing.text_stripper import strip_tags, ignore_non_ascii
-from preprocessing.data_split import create_train_val_split
+from preprocessing.data_split import create_train_val_split, copy_truth_data_split
 from shared.utils import save_dict_to_json, save_cli_options
-from shared.global_constants import RES_DIR, DATA_DIR
+from shared.global_constants import RES_DIR, DATA_DIR, DATA_SPLIT_DIR
 
 
 ROOT_DOWNLOAD_URL = 'https://korp.csc.fi/download/HCS/na-v2'
@@ -57,11 +57,12 @@ def parse_arguments(args_to_parse):
         help="Determine how to generate the validation set split if not already saved to disk",
     )
     general.add_argument(
-        "--seed",
-        type=int,
-        default=12321,
-        help='Random seed for reproducability'
+        '--new-data-split',
+        action='store_true',
+        default=False,
+        help='Use a new set of dataset split indices or use a previous saved one.',
     )
+    general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
     return parser.parse_args(args_to_parse)
 
 
@@ -136,6 +137,7 @@ def _read_and_format_zenodo_news_as_df(data_dir: str) -> pd.DataFrame:
     Read the raw zenodo swahili news data and reformat it into a DataFrame with labels.
     Remove Some tweet meta data which is not relevant to the problem.
     """
+
     def clean(text: str):
         text = ignore_non_ascii(text.lower()).strip()
         return re.sub(r"a post shared by.*?pdt|a post shared by.*?pst", "", text).strip()
@@ -178,12 +180,21 @@ def main(args):
         save_dict_to_json(labels_dict, labels_path)
 
         catagorical_labels = torch.LongTensor([labels_dict[label] for label in dataset_df['document_type'].tolist()])
-        create_train_val_split(
-            results_dir=results_dir,
-            node_labels=catagorical_labels,
-            train_ratio=args.train_ratio,
-            val_split_type=args.val_split_type,
-        )
+        if args.new_data_split:
+            create_train_val_split(
+                results_dir=results_dir,
+                node_labels=catagorical_labels,
+                train_ratio=args.train_ratio,
+                val_split_type=args.val_split_type,
+            )
+        else:
+            if os.path.isdir(DATA_SPLIT_DIR):
+                copy_truth_data_split(
+                    data_split_dir=DATA_SPLIT_DIR, results_dir=results_dir, cat_labels=catagorical_labels
+                )
+            else:
+                raise Exception(f'Expected your truth data split directory at {DATA_SPLIT_DIR}, but found no content')
+
         dataset_df.to_csv(dataframe_path, index=False, sep=';')
 
 

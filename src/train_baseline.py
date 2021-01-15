@@ -8,6 +8,7 @@ import sys
 
 from baselines.tfidf_lr import build_tfidf_from_df, load_tfidf
 from baselines.avg_fasttext import build_avg_fasttext_from_df, load_avg_fasttext
+from baselines.doc2vec_lr import build_doc2vec_from_df, load_doc2vec
 from shared.global_constants import RES_DIR
 from shared.loaders import load_train_val_nodes
 from shared.utils import save_cli_options, save_dict_to_json
@@ -40,22 +41,36 @@ def parse_arguments(args_to_parse):
         type=str,
         default='tf-idf',
         choices=['tf-idf', 'doc2vec', 'fasttext'],
-        help='Select the model type to use before feeding into a logistic regression layer'
+        help='Select the model type to use before feeding into a logistic regression layer',
     )
     general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
 
     training = parser.add_argument_group('Training settings')
     training.add_argument(
-        '--epochs',
-        type=int,
-        default=10,
-        help="The number of epochs to run",
-    )
-    training.add_argument(
         '--train-set-label-proportion',
         type=float,
         default=0.2,
         help='Ratio of nodes in the training set which we keep labelled',
+    )
+    # CLI options of the form `--doc2vec-XXXX` pertain to doc2vec
+    training.add_argument(
+        '--doc2vec-epochs',
+        type=int,
+        default=10,
+        help="The number of epochs to run when training Doc2Vec",
+    )
+    training.add_argument(
+        '--doc2vec-feature-dims',
+        type=int,
+        default=300,
+        help="The Doc2vec feature vector size",
+    )
+    training.add_argument(
+        '--doc2vec-dm',
+        type=int,
+        choices=[0, 1],
+        default=1,
+        help="The training regime to use for Doc2Vec: Distributed Memory (1) or Distributed Bag of Words (0)",
     )
     return parser.parse_args(args_to_parse)
 
@@ -98,6 +113,24 @@ def main(args):
 
         print('Load average FastText data...')
         input_features, labels = load_avg_fasttext(preproc_dir)
+
+    elif args.model == 'doc2vec':
+        if not os.path.isdir(preproc_dir):
+            os.makedirs(preproc_dir, exist_ok=True)
+            build_doc2vec_from_df(
+                save_dir=preproc_dir,
+                df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
+                stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
+                text_column='document_content',
+                label_column='document_type',
+                training_regime=args.doc2vec_dm,
+                embedding_dimension=args.doc2vec_feature_dims,
+                num_epochs=args.doc2vec_epochs,
+            )
+
+        print('Load Doc2vec data...')
+        input_features, labels = load_doc2vec(preproc_dir)
+
     else:
         raise Exception(f'Unrecognised model type: {args.model}')
 
@@ -124,6 +157,12 @@ def main(args):
     save_dict_to_json(
         {'train_accuracy': train_accuracy, 'val_accuracy': val_accuracy}, os.path.join(output_save_dir, 'metric.json')
     )
+
+    # from sklearn.model_selection import learning_curve
+    # train_sizes, train_scores, test_scores = learning_curve(
+    #     classifier, input_features[train_nodes, :], labels[train_nodes]
+    # )
+    # print(train_scores)
 
 
 if __name__ == '__main__':

@@ -48,7 +48,7 @@ def parse_arguments(args_to_parse):
         required=True,
         help="Path to the SALAMA stemming dictionary",
     )
-    general.add_argument('--seed', type=int, default=12321, help="Random seed for reproducability")
+    general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
 
     training = parser.add_argument_group('Training settings')
     training.add_argument(
@@ -94,7 +94,8 @@ def parse_arguments(args_to_parse):
         '--keep-all-checkpoints',
         action='store_true',
         default=False,
-        help="Whether to keep all model checkpoints while training. Default is False, in which case only the most recent checkpoint will be kept",
+        help="Whether to keep all model checkpoints while training. \
+            Default is False, in which case only the most recent checkpoint will be kept",
     )
     return parser.parse_args(args_to_parse)
 
@@ -139,7 +140,7 @@ def main(args):
         num_heads=8,
         dropout_ratio=args.dropout_ratio,
         use_bias=False,
-        relu_negative_slope=0.2
+        relu_negative_slope=0.2,
     )
     trainer = Trainer(
         model=text_gcn_model,

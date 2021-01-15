@@ -44,7 +44,7 @@ def build_graph_from_df(
     print('Word Co-ocurrences...')
     windows = []
     for document in tqdm(document_list, desc='Generating all windows: '):
-        windows.extend(_create_window_contexts(document, window_size, stemming_map_path))
+        windows.extend(_create_window_contexts(document, window_size, stemming_map))
     word_occurence_count_map = _create_word_occurence_count_map(windows)
     word_pair_occurence_count_map = _create_word_pair_occurence_count_map(windows)
 
@@ -83,19 +83,18 @@ def build_graph_from_df(
     )
 
 
-def _create_window_contexts(doc_list: List[str], window_size: int, stemming_map: Dict[str, str]) -> List[Set[str]]:
+def _create_window_contexts(doc: str, window_size: int, stemming_map: Dict[str, str]) -> List[Set[str]]:
     """
     NOTE: not all windows will be the same size.
     Specifically windows taken from documents which are shorter than the window size.
     """
     windows = []
-    for doc in doc_list:
-        words = tokenize_prune_stem(doc, stemming_map=stemming_map)
-        if len(words) <= window_size:
-            windows.append(set(words))
-        else:
-            for i in range(len(words) - window_size + 1):
-                windows.append(set(words[i : i + window_size]))
+    words = tokenize_prune_stem(doc, stemming_map=stemming_map)
+    if len(words) <= window_size:
+        windows.append(set(words))
+    else:
+        for i in range(len(words) - window_size + 1):
+            windows.append(set(words[i : i + window_size]))
     return windows
 
 
