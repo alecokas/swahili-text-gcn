@@ -99,8 +99,12 @@ def build_graph_from_df(
             embedding_dimension=300,
             training_regime=1,
         )
-        print(input_word_features.shape)
-        input_features = np.concatenate([input_word_features, input_doc_features], axis=1)
+        # The order of concatenation is important. It must match the order in adjacency.
+        input_features = torch.FloatTensor(
+            np.concatenate([input_word_features, input_doc_features], axis=0)
+        ).to_sparse()
+        print(f'input_word_features.shape: {input_word_features.shape}')
+        print(f'input_doc_features.shape: {input_doc_features.shape}')
     else:
         raise TypeError(f'{input_feature_type} is not a valid input feature type')
 
