@@ -8,7 +8,7 @@ import sys
 
 from baselines.tfidf_lr import build_tfidf_from_df, load_tfidf
 from baselines.avg_fasttext import build_avg_fasttext_from_df, load_avg_fasttext
-from baselines.doc2vec_lr import build_doc2vec_from_df, load_doc2vec
+from baselines.doc2vec import build_doc2vec_from_df, load_doc2vec
 from shared.global_constants import RES_DIR
 from shared.loaders import load_train_val_nodes
 from shared.utils import save_cli_options, save_dict_to_json

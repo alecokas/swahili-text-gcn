@@ -2,11 +2,11 @@ from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 import logging
 import numpy as np
 import os
-from sklearn.feature_extraction.text import CountVectorizer
 from typing import List, Tuple
 
+from embeddings.doc_features import get_doc2vec_embeddngs
 from shared.global_constants import RES_DIR
-from shared.utils import read_json_as_dict, tokenize_prune_stem, write_to_meta, check_df_and_stemming_paths
+from shared.utils import read_json_as_dict, write_to_meta, check_df_and_stemming_paths
 from shared.loaders import load_text_and_labels, save_categorical_labels
 
 
@@ -32,26 +32,15 @@ def build_doc2vec_from_df(
     document_list, labels = load_text_and_labels(df_path, text_column, label_column)
     save_categorical_labels(save_dir, labels, as_numpy=True)
 
-    # Tokenize
-    cv = CountVectorizer(tokenizer=lambda text: tokenize_prune_stem(text, stemming_map=stemming_map))
-    cv_tokenizer = cv.build_tokenizer()
-    document_list = [cv_tokenizer(document) for document in document_list]
-
-    # Convert to TaggedDocument and train
-    print('Training Doc2Vec...')
-    tagged_document_list = [TaggedDocument(doc, [i]) for i, doc in enumerate(document_list)]
-    doc2vec_model = _train_doc2vec(
-        docs=tagged_document_list,
-        feature_dims=embedding_dimension,
+    doc_vecs = get_doc2vec_embeddngs(
+        save_dir=save_dir,
+        document_list=document_list,
+        stemming_map=stemming_map,
         num_epochs=num_epochs,
+        embedding_dimension=embedding_dimension,
         training_regime=training_regime,
     )
-
-    doc_vecs = _infer_document_embeddings(doc2vec_model, document_list)
     print(f'{doc_vecs.shape[0]} documents, each with {doc_vecs.shape[1]} features')
-    assert doc_vecs.shape[0] == len(
-        tagged_document_list
-    ), f'Expected {doc_vecs.shape[0]} == {len(tagged_document_list)}'
     np.save(os.path.join(save_dir, 'doc2vec-embeddings.npy'), doc_vecs)
 
     # Save and meta-data to disk
