@@ -6,7 +6,7 @@ import random
 from sklearn.linear_model import LogisticRegression
 import sys
 
-from baselines.tfidf_lr import build_tfidf_from_df, load_tfidf
+from baselines.tfidf import build_tfidf_from_df, load_tfidf
 from baselines.avg_fasttext import build_avg_fasttext_from_df, load_avg_fasttext
 from baselines.doc2vec import build_doc2vec_from_df, load_doc2vec
 from shared.global_constants import RES_DIR
