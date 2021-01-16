@@ -143,7 +143,7 @@ def main(args):
     text_gcn_model = create_model(
         model_type=args.model,
         num_classes=len(labels.unique()),
-        num_input_features=len(input_features),
+        num_input_features=input_features.shape[1],
         num_hidden_features=200,
         num_heads=8,
         dropout_ratio=args.dropout_ratio,
