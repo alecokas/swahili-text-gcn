@@ -6,7 +6,7 @@ import random
 from sklearn.linear_model import LogisticRegression
 import sys
 
-from baselines.tfidf import build_tfidf_from_df, load_tfidf
+from baselines.vectorizers import build_vectorizer_from_df, load_vectorized_data
 from baselines.avg_fasttext import build_avg_fasttext_from_df, load_avg_fasttext
 from baselines.doc2vec import build_doc2vec_from_df, load_doc2vec
 from shared.global_constants import RES_DIR
@@ -40,7 +40,7 @@ def parse_arguments(args_to_parse):
         '--model',
         type=str,
         default='tf-idf',
-        choices=['tf-idf', 'doc2vec', 'fasttext'],
+        choices=['tf-idf', 'count', 'doc2vec', 'fasttext'],
         help='Select the model type to use before feeding into a logistic regression layer',
     )
     general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
@@ -86,10 +86,11 @@ def main(args):
 
     preproc_dir = os.path.join(results_dir, 'preproc')
 
-    if args.model == 'tf-idf':
+    if args.model == 'tf-idf' or args.model == 'count':
         if not os.path.isdir(preproc_dir):
             os.makedirs(preproc_dir, exist_ok=True)
-            build_tfidf_from_df(
+            build_vectorizer_from_df(
+                vectorizer_name=args.model,
                 save_dir=preproc_dir,
                 df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
                 stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
@@ -97,8 +98,8 @@ def main(args):
                 label_column='document_type',
             )
 
-        print('Load tf-idf data...')
-        input_features, labels = load_tfidf(preproc_dir)
+        print(f'Load {args.model} data...')
+        input_features, labels = load_vectorized_data(preproc_dir, args.model)
 
     elif args.model == 'fasttext':
         if not os.path.isdir(preproc_dir):
