@@ -8,8 +8,8 @@ from tqdm import tqdm
 import torch
 from typing import Dict, List, Set, Tuple, Optional
 
-from src.embeddings.doc_features import get_doc2vec_embeddngs
-from src.embeddings.word_features import get_word2vec_embeddngs
+from embeddings.doc_features import get_doc2vec_embeddngs
+from embeddings.word_features import get_word2vec_embeddngs
 from shared.loaders import load_text_and_labels, save_categorical_labels
 from shared.utils import (
     save_dict_to_json,
@@ -24,7 +24,7 @@ def build_graph_from_df(
     graph_dir: str,
     df_path: str,
     stemming_map_path: str,
-    input_features_type: str,
+    input_feature_type: str,
     text_column: str,
     label_column: str,
     window_size: int,
@@ -57,8 +57,13 @@ def build_graph_from_df(
     num_windows = len(windows)
     del windows
 
+    word_list = ordered_word_list(token_to_int_vocab_map)
+    assert _check_order(
+        word_list, token_to_int_vocab_map
+    ), 'word_list is not consistent with the token indices in token_to_int_vocab_map'
+
     word_cooccurrences_list = _word_cooccurrences(
-        words_list=list(token_to_int_vocab_map.keys()),
+        words_list=word_list,
         word_occurence_count_map=word_occurence_count_map,
         word_pair_occurence_count_map=word_pair_occurence_count_map,
         num_windows=num_windows,
@@ -73,9 +78,9 @@ def build_graph_from_df(
     print(f'The adjacency has size: {adjacency_shape}')
     del adjacency
 
-    if input_features_type == 'one-hot':
+    if input_feature_type == 'one-hot':
         input_features = torch.eye(adjacency_shape[0]).to_sparse()
-    elif input_features_type == 'text2vec':
+    elif input_feature_type == 'text2vec':
         # For now, keep these doc2vec settings constant
         input_doc_features = get_doc2vec_embeddngs(
             save_dir=graph_dir,
@@ -83,7 +88,7 @@ def build_graph_from_df(
             stemming_map=stemming_map,
             num_epochs=20,
             embedding_dimension=300,
-            training_regime=1
+            training_regime=1,
         )
         input_word_features = get_word2vec_embeddngs(
             save_dir=graph_dir,
@@ -92,10 +97,12 @@ def build_graph_from_df(
             stemming_map=stemming_map,
             num_epochs=20,
             embedding_dimension=300,
-            training_regime=1
+            training_regime=1,
         )
+        print(input_word_features.shape)
+        input_features = np.concatenate([input_word_features, input_doc_features], axis=1)
     else:
-        raise TypeError(f'{input_features_type} is not a valid input feature type')
+        raise TypeError(f'{input_feature_type} is not a valid input feature type')
 
     torch.save(input_features, os.path.join(graph_dir, 'input_features.pt'))
     print(f'Input features size: {input_features.shape}')
@@ -224,3 +231,19 @@ def _merge_into_adjacency(
         adj.shape, (len(token_to_int_vocab_map) + tf_ids.shape[0], len(token_to_int_vocab_map) + tf_ids.shape[0])
     )
     return adj
+
+
+def _check_order(word_list: List[str], token_to_int_vocab_map: Dict[str, int]) -> bool:
+    for index, word in enumerate(word_list):
+        if token_to_int_vocab_map[word] != index:
+            return False
+    return True
+
+
+def ordered_word_list(token_to_int_vocab_map: Dict[str, int]) -> List[str]:
+    word_list = [None] * len(token_to_int_vocab_map)
+    for word, idx in token_to_int_vocab_map.items():
+        word_list[idx] = word
+    if None in word_list:
+        raise Exception('There is a `None` element in the list')
+    return word_list

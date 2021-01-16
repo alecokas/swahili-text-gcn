@@ -1,4 +1,4 @@
-from gensim.models.word2vec import Word2Vec
+from gensim.models import Word2Vec
 import logging
 import numpy as np
 import os
@@ -28,24 +28,13 @@ def get_word2vec_embeddngs(
     cv = CountVectorizer(tokenizer=lambda text: tokenize_prune_stem(text, stemming_map=stemming_map))
     cv_tokenizer = cv.build_tokenizer()
     document_list = [cv_tokenizer(document) for document in document_list]
-
+    print(document_list[0])
     # Convert to TaggedDocument and train
     print('Training Word2Vec...')
-    word2vec_model = _train_word2vec(
-        docs=document_list,
-        feature_dims=embedding_dimension,
-        num_epochs=num_epochs,
-        training_regime=training_regime,
-    )
-    _save_for_inference(word2vec_model, os.path.join(save_dir, 'word2vec.model'))
+    model = Word2Vec(document_list, size=embedding_dimension, window=5, workers=4, sg=training_regime, min_count=1)
+    model.save(os.path.join(save_dir, 'word2vec.model'))
 
-    return _infer_word_embeddings(word2vec_model, word_list)
-
-
-def _train_word2vec(docs: List[str], feature_dims: int, num_epochs: int, training_regime: int) -> Word2Vec:
-    model = Word2Vec(vector_size=feature_dims, window=5, workers=4, num_epochs=num_epochs, sg=training_regime)
-    model.build_vocab(docs)
-    model.train(docs, total_examples=model.corpus_count, epochs=num_epochs)
+    return _infer_word_embeddings(model, word_list)
 
 
 def _infer_word_embeddings(model: Word2Vec, word_list: List[str]) -> np.ndarray:
@@ -54,9 +43,4 @@ def _infer_word_embeddings(model: Word2Vec, word_list: List[str]) -> np.ndarray:
     Returns a 2D array with shape (num_words, embedding_dimension)
     """
     print('Infering word embeddings..')
-    return np.array([model.infer_vector(word) for word in word_list])
-
-
-def _save_for_inference(model: Word2Vec, path_name: str) -> None:
-    model.delete_temporary_training_data(keep_doctags_vectors=True, keep_inference=True)
-    model.save(path_name)
+    return np.array([model[word] for word in word_list])

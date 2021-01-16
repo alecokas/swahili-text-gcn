@@ -6,7 +6,6 @@ import sys
 import torch
 
 from gnn.dataloading.build_graph import build_graph_from_df
-from gnn.dataloading.input_features import build_bow_input_features
 from gnn.dataloading.loaders import load_datasets
 from gnn.model.model import create_model
 from gnn.model.trainer import Trainer
@@ -122,15 +121,6 @@ def main(args):
     if not os.path.isdir(graph_dir):
         print('Building graph...')
         os.makedirs(graph_dir, exist_ok=True)
-        # if args.input_features:
-        #     build_bow_input_features(
-        #         graph_dir=graph_dir,
-        #         df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
-        #         stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
-        #         text_column='document_content',
-        #         label_column='document_type',
-        #     )
-
         build_graph_from_df(
             graph_dir=graph_dir,
             df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
