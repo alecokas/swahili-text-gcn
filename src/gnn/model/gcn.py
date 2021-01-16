@@ -50,6 +50,12 @@ class GraphConvLayer(nn.Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input_x: torch.FloatTensor, adjacency: torch.sparse.FloatTensor) -> torch.FloatTensor:
+        """
+        input_x.shape == (num_nodes, in_features)
+        support.shape == (num_nodes, out_features)
+        adjacency.shape == (num_nodes, num_nodes)
+        output_z.shape == (num_nodes, out_features)
+        """
         input_x = self.dropout(input_x)
         support = torch.mm(input_x, self.weight)
         output_z = torch.spmm(adjacency, support)
