@@ -9,7 +9,7 @@ import torch
 from typing import Dict, List, Set, Tuple, Optional
 
 from embeddings.doc_features import get_doc2vec_embeddngs
-from embeddings.word_features import get_word2vec_embeddngs
+from embeddings.word_features import train_word2vec, infer_word2vec_embeddings
 from shared.loaders import load_text_and_labels, save_categorical_labels
 from shared.utils import (
     save_dict_to_json,
@@ -87,18 +87,19 @@ def build_graph_from_df(
             document_list=document_list,
             stemming_map=stemming_map,
             num_epochs=20,
-            embedding_dimension=300,
+            vector_size=300,
             training_regime=1,
         )
-        input_word_features = get_word2vec_embeddngs(
+        word2vec_model = train_word2vec(
             save_dir=graph_dir,
             document_list=document_list,
-            word_list=word_list,
             stemming_map=stemming_map,
             num_epochs=20,
             embedding_dimension=300,
             training_regime=1,
         )
+        input_word_features = infer_word2vec_embeddings(word2vec_model, word_list)
+        del word2vec_model
         # The order of concatenation is important. It must match the order in adjacency.
         input_features = torch.FloatTensor(
             np.concatenate([input_word_features, input_doc_features], axis=0)

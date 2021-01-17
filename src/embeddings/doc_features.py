@@ -16,7 +16,7 @@ def get_doc2vec_embeddngs(
     document_list: List[str],
     stemming_map: Dict[str, str],
     num_epochs: int,
-    embedding_dimension: int,
+    vector_size: int,
     training_regime: int,
 ) -> np.ndarray:
     # Tokenize
@@ -29,7 +29,7 @@ def get_doc2vec_embeddngs(
     tagged_document_list = [TaggedDocument(doc, [i]) for i, doc in enumerate(document_list)]
     doc2vec_model = _train_doc2vec(
         docs=tagged_document_list,
-        feature_dims=embedding_dimension,
+        vector_size=vector_size,
         num_epochs=num_epochs,
         training_regime=training_regime,
     )
@@ -38,8 +38,8 @@ def get_doc2vec_embeddngs(
     return _infer_document_embeddings(doc2vec_model, document_list)
 
 
-def _train_doc2vec(docs: List[TaggedDocument], feature_dims: int, num_epochs: int, training_regime: int) -> Doc2Vec:
-    model = Doc2Vec(vector_size=feature_dims, window=5, min_count=2, workers=4, epochs=num_epochs, dm=training_regime)
+def _train_doc2vec(docs: List[TaggedDocument], vector_size: int, num_epochs: int, training_regime: int) -> Doc2Vec:
+    model = Doc2Vec(vector_size=vector_size, window=5, min_count=2, workers=4, epochs=num_epochs, dm=training_regime)
     model.build_vocab(docs)
     model.train(docs, total_examples=model.corpus_count, epochs=num_epochs)
     return model
