@@ -5,6 +5,7 @@ from random import sample
 import torch
 from typing import List, Tuple
 from sklearn.model_selection import train_test_split
+from collections import Counter
 
 from shared.utils import save_dict_to_json
 
@@ -37,13 +38,15 @@ def load_train_val_nodes(
     train_nodes = torch.load(os.path.join(preproc_dir, 'train-indices.pt'))
     train_labels = torch.load(os.path.join(preproc_dir, 'train-labels.pt'))
 
-    train_nodes_subset, _, label_train_subset, _ = train_test_split(
+    train_nodes_subset, _, train_label_subset, _ = train_test_split(
         train_nodes,
         train_labels,
         stratify=train_labels,
         test_size=1 - train_set_label_proportion,
         random_state=random_state,
     )
+
+    print(f'Training subset split: {dict(Counter(train_label_subset.numpy()))}')
 
     val_nodes = torch.load(os.path.join(preproc_dir, 'val-indices.pt'))
 
