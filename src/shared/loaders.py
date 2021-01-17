@@ -37,6 +37,12 @@ def load_train_val_nodes(
 
     train_nodes = torch.load(os.path.join(preproc_dir, 'train-indices.pt'))
     train_labels = torch.load(os.path.join(preproc_dir, 'train-labels.pt'))
+    val_nodes = torch.load(os.path.join(preproc_dir, 'val-indices.pt'))
+
+    if train_set_label_proportion == 0:
+        if as_numpy:
+            return (train_nodes_subset.numpy(), val_nodes.numpy())
+        return train_nodes_subset, val_nodes
 
     train_nodes_subset, _, train_label_subset, _ = train_test_split(
         train_nodes,
@@ -48,11 +54,6 @@ def load_train_val_nodes(
 
     print(f'Training subset split: {dict(Counter(train_label_subset.numpy()))}')
 
-    val_nodes = torch.load(os.path.join(preproc_dir, 'val-indices.pt'))
-
     if as_numpy:
-        return (
-            train_nodes_subset.numpy(),
-            val_nodes.numpy(),
-        )
+        return (train_nodes_subset.numpy(), val_nodes.numpy())
     return train_nodes_subset, val_nodes

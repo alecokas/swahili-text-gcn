@@ -167,12 +167,12 @@ def main(args):
         autodelete_checkpoints=not args.keep_all_checkpoints,
     )
     print('Training...')
-    # trainer(
-    #     input_features=input_features,
-    #     adjacency=adjacency,
-    #     labels=labels,
-    #     num_epochs=args.epochs,
-    # )
+    trainer(
+        input_features=input_features,
+        adjacency=adjacency,
+        labels=labels,
+        num_epochs=args.epochs,
+    )
 
     print('Complete!')
 
