@@ -200,7 +200,7 @@ def main(args):
         )
         print('Second pass at cleaning the stemming vocab_counts...')
         remove_stemming_entries_below_count_threshold(
-            stemming_cleaned_path, cleaned_vocab_path, threshold=args.count_threshold
+            stemming_cleaned_path, cleaned_vocab_path
         )
 
 
