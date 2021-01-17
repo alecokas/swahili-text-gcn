@@ -39,11 +39,7 @@ def tokenize_prune_stem(text: str, stemming_map: Optional[Dict[str, str]] = None
 
 def tokenize_prune(text: str) -> List[str]:
     """ Use NLTK word tokenisation and clean our text """
-    return [
-        word
-        for word in word_tokenize(text)
-        if len(word) > 1 and word.isalpha() and word not in STOP_WORDS
-    ]
+    return [word for word in word_tokenize(text) if len(word) > 1 and word.isalpha() and word not in STOP_WORDS]
 
 
 def write_list_to_file(list_of_strings: List[str], target_file: str) -> None:
@@ -80,10 +76,10 @@ def write_to_meta(data_meta_path: str, key_val: Dict[str, Any]) -> None:
 
 
 def save_cli_options(options, save_dir: str) -> None:
-    """ Save all options to JSON file.
-        Arguments:
-            options: A Namespace object from argparse
-            save_dir: String location to save the options
+    """Save all options to JSON file.
+    Arguments:
+        options: A Namespace object from argparse
+        save_dir: String location to save the options
     """
     opt_dict = {}
     for option in vars(options):
@@ -95,3 +91,16 @@ def save_cli_options(options, save_dir: str) -> None:
     opts_file_path = os.path.join(save_dir, f"opts-{dt_string}.json")
     with open(opts_file_path, "w") as opt_file:
         json.dump(opt_dict, opt_file)
+
+
+def check_df_and_stemming_paths(df_path: str, stemming_map_path: str) -> None:
+    if not os.path.isfile(df_path):
+        raise FileNotFoundError(
+            f'{df_path} could not be found.\
+                Remember that you first need to generate the dataset using the `create_dataset` script'
+        )
+    if not os.path.isfile(stemming_map_path):
+        raise FileNotFoundError(
+            f'{stemming_map_path} could not be found.\
+                Remember that you need to first generate a stemming map using the `download_stemming` script'
+        )

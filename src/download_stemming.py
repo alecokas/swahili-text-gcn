@@ -199,9 +199,7 @@ def main(args):
             stemming_map=stemming_map,
         )
         print('Second pass at cleaning the stemming vocab_counts...')
-        remove_stemming_entries_below_count_threshold(
-            stemming_cleaned_path, cleaned_vocab_path, threshold=args.count_threshold
-        )
+        remove_stemming_entries_below_count_threshold(stemming_cleaned_path, cleaned_vocab_path)
 
 
 if __name__ == "__main__":

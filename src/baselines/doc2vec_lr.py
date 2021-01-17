@@ -6,7 +6,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from typing import List, Tuple
 
 from shared.global_constants import RES_DIR
-from shared.utils import read_json_as_dict, tokenize_prune_stem, write_to_meta
+from shared.utils import read_json_as_dict, tokenize_prune_stem, write_to_meta, check_df_and_stemming_paths
 from shared.loaders import load_text_and_labels, save_categorical_labels
 
 
@@ -27,16 +27,7 @@ def build_doc2vec_from_df(
     embedding_dimension: int,
     num_epochs: int,
 ) -> None:
-    if not os.path.isfile(df_path):
-        raise FileNotFoundError(
-            f'{df_path} could not be found.\
-                Remember that you first need to generate the dataset using the `create_dataset` script'
-        )
-    if not os.path.isfile(stemming_map_path):
-        raise FileNotFoundError(
-            f'{stemming_map_path} could not be found.\
-                Remember that you need to first generate a stemming map using the `download_stemming` script'
-        )
+    check_df_and_stemming_paths(df_path, stemming_map_path)
     stemming_map = read_json_as_dict(stemming_map_path)
     document_list, labels = load_text_and_labels(df_path, text_column, label_column)
     save_categorical_labels(save_dir, labels, as_numpy=True)

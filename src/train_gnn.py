@@ -25,6 +25,13 @@ def parse_arguments(args_to_parse):
         '--model', type=str, default='gcn', choices=['gcn', 'gat', 'spgat'], help='Select a GNN model to use'
     )
     general.add_argument(
+        '--input-features',
+        type=str,
+        default='one-hot',
+        choices=['one-hot', 'text2vec'],
+        help='Select the type of input features to use. The `text2vec` option uses doc2vec and word2vec embeddings.',
+    )
+    general.add_argument(
         '--input-data-dir',
         type=str,
         required=True,
@@ -118,6 +125,7 @@ def main(args):
             graph_dir=graph_dir,
             df_path=os.path.join(RES_DIR, args.input_data_dir, 'dataset.csv'),
             stemming_map_path=os.path.join(RES_DIR, args.stemmer_path),
+            input_feature_type=args.input_features,
             text_column='document_content',
             label_column='document_type',
             window_size=20,
@@ -135,7 +143,7 @@ def main(args):
     text_gcn_model = create_model(
         model_type=args.model,
         num_classes=len(labels.unique()),
-        num_input_features=len(input_features),
+        num_input_features=input_features.shape[1],
         num_hidden_features=200,
         num_heads=8,
         dropout_ratio=args.dropout_ratio,
