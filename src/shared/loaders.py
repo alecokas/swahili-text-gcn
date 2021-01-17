@@ -4,6 +4,7 @@ import pandas as pd
 from random import sample
 import torch
 from typing import List, Tuple
+from sklearn.model_selection import train_test_split
 
 from shared.utils import save_dict_to_json
 
@@ -30,13 +31,25 @@ def save_categorical_labels(save_dir: str, labels: List[str], as_numpy: bool = F
 
 
 def load_train_val_nodes(
-    preproc_dir: str, train_set_label_proportion: float, as_numpy: bool = False
+    preproc_dir: str, train_set_label_proportion: float, random_state: int, as_numpy: bool = False
 ) -> Tuple[torch.LongTensor, torch.LongTensor]:
-    train_nodes = torch.load(os.path.join(preproc_dir, 'train-indices.pt')).tolist()
-    train_nodes = torch.LongTensor(sample(train_nodes, k=int(len(train_nodes) * train_set_label_proportion)))
+
+    train_nodes = torch.load(os.path.join(preproc_dir, 'train-indices.pt'))
+    train_labels = torch.load(os.path.join(preproc_dir, 'train-labels.pt'))
+
+    train_nodes_subset, _, label_train_subset, _ = train_test_split(
+        train_nodes,
+        train_labels,
+        stratify=train_labels,
+        test_size=1 - train_set_label_proportion,
+        random_state=random_state,
+    )
 
     val_nodes = torch.load(os.path.join(preproc_dir, 'val-indices.pt'))
 
     if as_numpy:
-        return train_nodes.numpy(), val_nodes.numpy()
-    return train_nodes, val_nodes
+        return (
+            train_nodes_subset.numpy(),
+            val_nodes.numpy(),
+        )
+    return train_nodes_subset, val_nodes

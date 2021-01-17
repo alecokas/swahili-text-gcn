@@ -11,7 +11,7 @@ import urllib.request
 import zipfile
 
 from preprocessing.text_stripper import strip_tags, ignore_non_ascii
-from preprocessing.data_split import create_train_val_split, copy_truth_data_split
+from preprocessing.data_split import create_train_val_split, copy_truth_data_split, new_create_train_val_split
 from shared.utils import save_dict_to_json, save_cli_options
 from shared.global_constants import RES_DIR, DATA_DIR, DATA_SPLIT_DIR
 
@@ -185,12 +185,16 @@ def main(args):
 
         catagorical_labels = torch.LongTensor([labels_dict[label] for label in dataset_df['document_type'].tolist()])
         if args.new_data_split:
-            create_train_val_split(
-                results_dir=results_dir,
-                node_labels=catagorical_labels,
-                train_ratio=args.train_ratio,
-                val_split_type=args.val_split_type,
-            )
+            new_create_train_val_split(results_dir=results_dir,
+                                       df=dataset_df,
+                                       train_ratio=args.train_ratio,
+                                       random_state=args.seed)
+            # create_train_val_split(
+            #     results_dir=results_dir,
+            #     node_labels=catagorical_labels,
+            #     train_ratio=args.train_ratio,
+            #     val_split_type=args.val_split_type,
+            # )
         else:
             if os.path.isdir(DATA_SPLIT_DIR):
                 copy_truth_data_split(

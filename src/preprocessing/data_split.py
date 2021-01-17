@@ -4,6 +4,9 @@ from random import shuffle, sample
 import shutil
 import torch
 from typing import List
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
 
 from shared.utils import save_dict_to_json
 
@@ -17,6 +20,18 @@ def create_train_val_split(
         _create_uniformly_sampled_split(results_dir, node_labels, train_ratio)
     else:
         raise Exception(f'{val_split_type} is not a valid val_split_type')
+
+
+def new_create_train_val_split(
+    results_dir: str, df: pd.DataFrame, train_ratio: float, random_state: int
+) -> None:
+    train_nodes, val_nodes, train_labels, val_labels = train_test_split(
+        df.document_idx, df.label_idx, stratify=df.label_idx, test_size=1 - train_ratio, random_state=random_state
+    )
+    names = ['train-indices', 'val-indices', 'train-labels', 'val-labels']
+    for name, data in zip(names, [train_nodes, val_nodes, train_labels, val_labels]):
+        torch.save(torch.LongTensor(data.values), os.path.join(results_dir, f'{name}.pt'))
+    _subset_distribution(df.label_idx, train_nodes.values, val_nodes.values, results_dir)
 
 
 def copy_truth_data_split(data_split_dir: str, results_dir: str, cat_labels: torch.LongTensor) -> None:
