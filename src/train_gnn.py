@@ -83,6 +83,7 @@ def parse_arguments(args_to_parse):
         '--train-set-label-proportion',
         type=float,
         default=0.2,
+        choices=[.01, .05, .1, .2],
         help='Ratio of nodes in the training set which we keep labelled',
     )
     training.add_argument(
@@ -137,7 +138,6 @@ def main(args):
     train_nodes, val_nodes = load_train_val_nodes(
         preproc_dir=os.path.join(RES_DIR, args.input_data_dir),
         train_set_label_proportion=args.train_set_label_proportion,
-        random_state=args.seed,
     )
 
     # Initialise model, trainer, and train

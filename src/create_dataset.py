@@ -11,7 +11,7 @@ import urllib.request
 import zipfile
 
 from preprocessing.text_stripper import strip_tags, ignore_non_ascii
-from preprocessing.data_split import create_train_val_split, copy_truth_data_split
+from preprocessing.data_split import create_train_val_split
 from shared.utils import save_dict_to_json, save_cli_options
 from shared.global_constants import RES_DIR, DATA_DIR, DATA_SPLIT_DIR
 
@@ -48,19 +48,6 @@ def parse_arguments(args_to_parse):
         type=float,
         default=0.8,
         help="Ratio of the nodes to reserve for training",
-    )
-    general.add_argument(
-        '--val-split-type',
-        choices=['balance_for_all_classes', 'uniform_over_all_data'],
-        default='uniform_over_all_data',
-        type=str,
-        help="Determine how to generate the validation set split if not already saved to disk",
-    )
-    general.add_argument(
-        '--new-data-split',
-        action='store_true',
-        default=False,
-        help='Use a new set of dataset split indices or use a previous saved one.',
     )
     general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
     return parser.parse_args(args_to_parse)
@@ -184,18 +171,11 @@ def main(args):
         assert dataset_df.label_idx.isnull().sum()==0,'There are null values for the label_idx column'
 
         catagorical_labels = torch.LongTensor([labels_dict[label] for label in dataset_df['document_type'].tolist()])
-        if args.new_data_split:
-            create_train_val_split(results_dir=results_dir,
-                                       df=dataset_df,
-                                       train_ratio=args.train_ratio,
-                                       random_state=args.seed)
-        else:
-            if os.path.isdir(DATA_SPLIT_DIR):
-                copy_truth_data_split(
-                    data_split_dir=DATA_SPLIT_DIR, results_dir=results_dir, cat_labels=catagorical_labels
-                )
-            else:
-                raise Exception(f'Expected your truth data split directory at {DATA_SPLIT_DIR}, but found no content')
+
+        create_train_val_split(results_dir=results_dir,
+                                   df=dataset_df,
+                                   train_ratio=args.train_ratio,
+                                   random_state=args.seed)
 
         dataset_df.to_csv(dataframe_path, index=False, sep=';')
 
