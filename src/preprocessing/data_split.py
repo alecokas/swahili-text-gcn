@@ -34,8 +34,8 @@ def copy_truth_data_split(data_split_dir: str, results_dir: str, cat_labels: tor
     assert num_train_nodes + num_val_nodes == num_labels, f'Expected {num_train_nodes + num_val_nodes} == {num_labels}'
     # Copy to new directory
     print(f'Copying train and val indices from {data_split_dir}')
-    shutil.copy(os.path.join(data_split_dir, 'train-indices.pt'), os.path.join(results_dir, 'train-indices.pt'))
-    shutil.copy(os.path.join(data_split_dir, 'val-indices.pt'), os.path.join(results_dir, 'val-indices.pt'))
+    for name in ['train-indices', 'val-indices', 'train-labels', 'val-labels']:
+        shutil.copy(os.path.join(data_split_dir, f'{name}.pt'), os.path.join(results_dir, f'{name}.pt'))
 
 
 def _subset_distribution(
