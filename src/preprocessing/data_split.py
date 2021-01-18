@@ -11,16 +11,15 @@ from sklearn.model_selection import train_test_split
 from shared.utils import save_dict_to_json
 
 
-def create_train_val_split(
-    results_dir: str, df: pd.DataFrame, train_ratio: float, random_state: int
-) -> None:
+def create_train_val_split(results_dir: str, df: pd.DataFrame, train_ratio: float, random_state: int) -> None:
     train_nodes, val_nodes, train_labels, val_labels = train_test_split(
         df.document_idx, df.label_idx, stratify=df.label_idx, test_size=1 - train_ratio, random_state=random_state
     )
     names = ['train-indices', 'val-indices', 'train-labels', 'val-labels']
 
-    assert (len(train_nodes) + len(val_nodes)) == len(df), f'Not all indices are included in the split: \
-        Expected {len(train_nodes) + len(val_nodes)} == {len(df)}'
+    assert (len(train_nodes) + len(val_nodes)) == len(
+        df
+    ), f'Not all indices are included in the split: Expected {len(train_nodes) + len(val_nodes)} == {len(df)}'
 
     for name, data in zip(names, [train_nodes, val_nodes, train_labels, val_labels]):
         torch.save(torch.LongTensor(data.values), os.path.join(results_dir, f'{name}.pt'))

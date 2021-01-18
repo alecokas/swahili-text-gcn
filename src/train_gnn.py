@@ -137,7 +137,7 @@ def main(args):
     train_nodes, val_nodes = load_train_val_nodes(
         preproc_dir=os.path.join(RES_DIR, args.input_data_dir),
         train_set_label_proportion=args.train_set_label_proportion,
-        random_state = args.seed
+        random_state=args.seed,
     )
 
     # Initialise model, trainer, and train
