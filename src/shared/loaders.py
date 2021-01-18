@@ -41,8 +41,8 @@ def load_train_val_nodes(
 
     if train_set_label_proportion == 0:
         if as_numpy:
-            return (train_nodes_subset.numpy(), val_nodes.numpy())
-        return train_nodes_subset, val_nodes
+            return (train_nodes.numpy(), val_nodes.numpy())
+        return train_nodes, val_nodes
 
     train_nodes_subset, _, train_label_subset, _ = train_test_split(
         train_nodes,
