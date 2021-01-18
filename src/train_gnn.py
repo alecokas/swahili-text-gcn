@@ -83,7 +83,7 @@ def parse_arguments(args_to_parse):
         '--train-set-label-proportion',
         type=float,
         default=0.2,
-        choices=[.01, .05, .1, .2],
+        choices=[0.01, 0.05, 0.1, 0.2],
         help='Ratio of nodes in the training set which we keep labelled',
     )
     training.add_argument(

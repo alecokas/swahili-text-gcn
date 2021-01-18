@@ -165,17 +165,16 @@ def main(args):
         dataset_df = read_and_format_as_df(data_dir, dataset=args.dataset_name.lower())
         labels_dict = {doc_type: idx for idx, doc_type in enumerate(dataset_df['document_type'].unique().tolist())}
         save_dict_to_json(labels_dict, labels_path)
-        dataset_df.reset_index(inplace=True,drop=True)
+        dataset_df.reset_index(inplace=True, drop=True)
         dataset_df['document_idx'] = dataset_df.index
         dataset_df['label_idx'] = dataset_df.document_type.map(labels_dict)
-        assert dataset_df.label_idx.isnull().sum()==0,'There are null values for the label_idx column'
+        assert dataset_df.label_idx.isnull().sum() == 0, 'There are null values for the label_idx column'
 
         catagorical_labels = torch.LongTensor([labels_dict[label] for label in dataset_df['document_type'].tolist()])
 
-        create_train_val_split(results_dir=results_dir,
-                                   df=dataset_df,
-                                   train_ratio=args.train_ratio,
-                                   random_state=args.seed)
+        create_train_val_split(
+            results_dir=results_dir, df=dataset_df, train_ratio=args.train_ratio, random_state=args.seed
+        )
 
         dataset_df.to_csv(dataframe_path, index=False, sep=';')
 
