@@ -16,7 +16,7 @@ def create_train_val_split(
     df: pd.DataFrame,
     train_ratio: float,
     random_state: int,
-    train_set_label_proportions: Optional[List[float]],
+    train_set_label_proportions: Optional[List[float]] = None,
 ) -> None:
 
     if train_set_label_proportions is None:
