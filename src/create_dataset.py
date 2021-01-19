@@ -170,8 +170,6 @@ def main(args):
         dataset_df['label_idx'] = dataset_df.document_type.map(labels_dict)
         assert dataset_df.label_idx.isnull().sum() == 0, 'There are null values for the label_idx column'
 
-        catagorical_labels = torch.LongTensor([labels_dict[label] for label in dataset_df['document_type'].tolist()])
-
         create_train_val_split(
             results_dir=results_dir, df=dataset_df, train_ratio=args.train_ratio, random_state=args.seed
         )

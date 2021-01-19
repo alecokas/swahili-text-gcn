@@ -44,5 +44,5 @@ def load_train_val_nodes(
     val_nodes = torch.load(os.path.join(preproc_dir, 'val-indices.pt'))
 
     if as_numpy:
-        return (train_nodes.numpy(), val_nodes.numpy())
+        return train_nodes.numpy(), val_nodes.numpy()
     return train_nodes, val_nodes
