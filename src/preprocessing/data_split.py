@@ -20,7 +20,7 @@ def create_train_val_split(
 ) -> None:
 
     train_nodes, val_nodes, train_labels, val_labels = train_test_split(
-        df.document_idx, df.label_idx, stratify=df.label_idx, test_size=1 - train_ratio, random_state=random_state
+        df.document_idx.values, df.label_idx.values, stratify=df.label_idx.values, test_size=1 - train_ratio, random_state=random_state
     )
     names = ['train-indices', 'val-indices', 'train-labels', 'val-labels']
 
@@ -29,8 +29,8 @@ def create_train_val_split(
     ), f'Not all indices are included in the split: Expected {len(train_nodes) + len(val_nodes)} == {len(df)}'
 
     for name, data in zip(names, [train_nodes, val_nodes, train_labels, val_labels]):
-        torch.save(torch.LongTensor(data.values), os.path.join(results_dir, f'{name}.pt'))
-    _subset_distribution(df.label_idx, train_nodes.values, val_nodes.values, results_dir)
+        torch.save(torch.LongTensor(data), os.path.join(results_dir, f'{name}.pt'))
+    _subset_distribution(df.label_idx.values, train_nodes, val_nodes, results_dir)
 
     for train_set_label_proportion in train_set_label_proportions:
         subset_name = f'{train_set_label_proportion:{1:d}}'
@@ -46,10 +46,10 @@ def create_train_val_split(
         )
 
         torch.save(
-            torch.LongTensor(train_nodes_subset.values), os.path.join(subset_dir, f'train-indices-{subset_name}.pt')
+            torch.LongTensor(train_nodes_subset), os.path.join(subset_dir, f'train-indices-{subset_name}.pt')
         )
         torch.save(
-            torch.LongTensor(train_label_subset.values), os.path.join(subset_dir, f'train-labels-{subset_name}.pt')
+            torch.LongTensor(train_label_subset), os.path.join(subset_dir, f'train-labels-{subset_name}.pt')
         )
 
 
