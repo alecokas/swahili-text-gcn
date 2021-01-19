@@ -3,80 +3,57 @@ import os
 from random import shuffle, sample
 import shutil
 import torch
-from typing import List
+from typing import List, Optional
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
 
 from shared.utils import save_dict_to_json
 
 
 def create_train_val_split(
-    results_dir: str, node_labels: torch.LongTensor, train_ratio: float, val_split_type: str
+    results_dir: str,
+    df: pd.DataFrame,
+    train_ratio: float,
+    random_state: int,
+    train_set_label_proportions: Optional[List[float]] = None,
 ) -> None:
-    if val_split_type == 'balance_for_all_classes':
-        _create_balanced_val_split(results_dir, node_labels, train_ratio)
-    elif val_split_type == 'uniform_over_all_data':
-        _create_uniformly_sampled_split(results_dir, node_labels, train_ratio)
-    else:
-        raise Exception(f'{val_split_type} is not a valid val_split_type')
 
+    if train_set_label_proportions is None:
+        train_set_label_proportions = [0.01, 0.05, 0.1, 0.2]
 
-def copy_truth_data_split(data_split_dir: str, results_dir: str, cat_labels: torch.LongTensor) -> None:
-    # First check that the number of labels add up
-    num_train_nodes = len(torch.load(os.path.join(data_split_dir, 'train-indices.pt')).tolist())
-    num_val_nodes = len(torch.load(os.path.join(data_split_dir, 'val-indices.pt')).tolist())
-    num_labels = len(cat_labels.tolist())
-    assert num_train_nodes + num_val_nodes == num_labels, f'Expected {num_train_nodes + num_val_nodes} == {num_labels}'
-    # Copy to new directory
-    print(f'Copying train and val indices from {data_split_dir}')
-    shutil.copy(os.path.join(data_split_dir, 'train-indices.pt'), os.path.join(results_dir, 'train-indices.pt'))
-    shutil.copy(os.path.join(data_split_dir, 'val-indices.pt'), os.path.join(results_dir, 'val-indices.pt'))
+    train_nodes, val_nodes, train_labels, val_labels = train_test_split(
+        df.document_idx.values,
+        df.label_idx.values,
+        stratify=df.label_idx.values,
+        test_size=1 - train_ratio,
+        random_state=random_state,
+    )
+    names = ['train-indices', 'val-indices', 'train-labels', 'val-labels']
 
+    assert (len(train_nodes) + len(val_nodes)) == len(
+        df
+    ), f'Not all indices are included in the split: Expected {len(train_nodes) + len(val_nodes)} == {len(df)}'
 
-def _create_balanced_val_split(results_dir: str, node_labels: torch.LongTensor, train_ratio: float) -> None:
-    """ Set up a validation set which has a balanced split over all classes, even if the data is not evenly split """
-    total_num_nodes = len(node_labels)
-    unique_labels = node_labels.unique()
-    num_val_nodes_per_label = int(total_num_nodes * (1 - train_ratio) / len(unique_labels))
+    for name, data in zip(names, [train_nodes, val_nodes, train_labels, val_labels]):
+        torch.save(torch.LongTensor(data), os.path.join(results_dir, f'{name}.pt'))
+    _subset_distribution(df.label_idx.values, train_nodes, val_nodes, results_dir)
 
-    val_indices = []
-    for label in unique_labels:
-        indices = [idx for idx in list(range(total_num_nodes)) if node_labels[idx] == label]
-        shuffle(indices)
-        val_indices.extend(indices[:num_val_nodes_per_label])
-    shuffle(val_indices)
+    for train_set_label_proportion in train_set_label_proportions:
+        subset_name = f'{train_set_label_proportion:{1:d}}'
+        subset_dir = os.path.join(results_dir, f"training_set_proportion_{subset_name.replace('.', '_')}")
+        os.makedirs(subset_dir, exist_ok=True)
 
-    assert len(val_indices) == (
-        num_val_nodes_per_label * len(unique_labels)
-    ), f'Expected {len(val_indices)} == {num_val_nodes_per_label * len(unique_labels)}'
+        train_nodes_subset, _, train_label_subset, _ = train_test_split(
+            train_nodes,
+            train_labels,
+            stratify=train_labels,
+            test_size=1 - train_set_label_proportion,
+            random_state=random_state,
+        )
 
-    val_set = set(val_indices)
-    train_indices = [index for index in range(total_num_nodes) if index not in val_set]
-    shuffle(train_indices)
-
-    assert (
-        len(train_indices) + len(val_indices)
-    ) == total_num_nodes, f'Not all indices are included in the split: \
-        Expected {len(train_indices) + len(val_indices)} == {total_num_nodes}'
-
-    _subset_distribution(node_labels, train_indices, val_indices, results_dir)
-    _save_indices(train_indices, val_indices, results_dir)
-
-
-def _create_uniformly_sampled_split(train_dir: str, node_labels: torch.LongTensor, train_ratio: float) -> None:
-    """ Uniformly sample to generate a validation set with approx. the same distribution as the full dataset """
-    total_num_nodes = len(node_labels)
-    num_val_nodes = int(total_num_nodes * (1 - train_ratio))
-    val_indices = sample(list(range(total_num_nodes)), k=num_val_nodes)
-
-    val_set = set(val_indices)
-    train_indices = [index for index in range(total_num_nodes) if index not in val_set]
-
-    assert (
-        len(train_indices) + len(val_indices)
-    ) == total_num_nodes, f'Not all indices are included in the split: \
-        Expected {len(train_indices) + len(val_indices)} == {total_num_nodes}'
-
-    _subset_distribution(node_labels, train_indices, val_indices, train_dir)
-    _save_indices(train_indices, val_indices, train_dir)
+        torch.save(torch.LongTensor(train_nodes_subset), os.path.join(subset_dir, f'train-indices-{subset_name}.pt'))
+        torch.save(torch.LongTensor(train_label_subset), os.path.join(subset_dir, f'train-labels-{subset_name}.pt'))
 
 
 def _subset_distribution(
