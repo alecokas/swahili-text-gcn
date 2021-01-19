@@ -3,7 +3,7 @@ import os
 from random import shuffle, sample
 import shutil
 import torch
-from typing import List
+from typing import List, Optional
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -16,11 +16,18 @@ def create_train_val_split(
     df: pd.DataFrame,
     train_ratio: float,
     random_state: int,
-    train_set_label_proportions: List[float] = [0.01, 0.05, 0.1, 0.2],
+    train_set_label_proportions: Optional[List[float]],
 ) -> None:
 
+    if train_set_label_proportions is None:
+        train_set_label_proportions = [0.01, 0.05, 0.1, 0.2]
+
     train_nodes, val_nodes, train_labels, val_labels = train_test_split(
-        df.document_idx.values, df.label_idx.values, stratify=df.label_idx.values, test_size=1 - train_ratio, random_state=random_state
+        df.document_idx.values,
+        df.label_idx.values,
+        stratify=df.label_idx.values,
+        test_size=1 - train_ratio,
+        random_state=random_state,
     )
     names = ['train-indices', 'val-indices', 'train-labels', 'val-labels']
 
@@ -45,12 +52,8 @@ def create_train_val_split(
             random_state=random_state,
         )
 
-        torch.save(
-            torch.LongTensor(train_nodes_subset), os.path.join(subset_dir, f'train-indices-{subset_name}.pt')
-        )
-        torch.save(
-            torch.LongTensor(train_label_subset), os.path.join(subset_dir, f'train-labels-{subset_name}.pt')
-        )
+        torch.save(torch.LongTensor(train_nodes_subset), os.path.join(subset_dir, f'train-indices-{subset_name}.pt'))
+        torch.save(torch.LongTensor(train_label_subset), os.path.join(subset_dir, f'train-labels-{subset_name}.pt'))
 
 
 def _subset_distribution(
