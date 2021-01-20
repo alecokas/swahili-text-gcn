@@ -50,6 +50,7 @@ def parse_arguments(args_to_parse):
         '--train-set-label-proportion',
         type=float,
         default=0.2,
+        choices=[0.01, 0.05, 0.1, 0.2],
         help='Ratio of nodes in the training set which we keep labelled',
     )
     # CLI options of the form `--doc2vec-XXXX` pertain to doc2vec
@@ -153,7 +154,7 @@ def main(args):
     print(f'Train Accuracy: {train_accuracy}')
     print(f'Validation Accuracy: {val_accuracy}')
 
-    output_save_dir = os.path.join(results_dir, 'model')
+    output_save_dir = os.path.join(results_dir, f'model_{args.train_set_label_proportion}')
     os.makedirs(output_save_dir, exist_ok=True)
     save_dict_to_json(
         {'train_accuracy': train_accuracy, 'val_accuracy': val_accuracy}, os.path.join(output_save_dir, 'metric.json')
