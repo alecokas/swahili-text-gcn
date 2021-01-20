@@ -111,7 +111,7 @@ def parse_arguments(args_to_parse):
     args = parser.parse_args(args_to_parse)
 
     # Append the window size to the train and graph directory names
-    args.graph_dir = f"{args.graph_dir}_w{args.window_size}"
+    args.graph_data_dir = f"{args.graph_data_dir}_w{args.window_size}"
     args.train_dir = f"{args.train_dir}_w{args.window_size}"
     return args
 
