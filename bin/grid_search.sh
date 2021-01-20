@@ -2,14 +2,11 @@
 
 # Execute a grid search over LR and dropout proportion
 
-
 name=$1
 input_data_dir=$2
-epochs=$3
-stemmer_path=$4
-lr=$5
-dropout_ratio=$6
-label_proportion=$7
+stemmer_path=$3
+epochs=$4
+label_proportion=$5
 
 for dropout_ratio in 0.3, 0.5
 do 
