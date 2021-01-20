@@ -8,7 +8,7 @@ stemmer_path=$3
 epochs=$4
 label_proportion=$5
 
-for dropout_ratio in 0.3, 0.5
+for dropout_ratio in 0.3 0.5
 do 
     for lr in 0.002
     do 
