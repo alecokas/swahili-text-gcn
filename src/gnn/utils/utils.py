@@ -33,10 +33,12 @@ def create_training_plot(training_history, name="training_history"):
     axes[0].set_ylabel("Accuracy", size=20)
     axes[0].grid(which="both")
 
-    axes[1].plot(training_history.epoch, training_history.val_loss, c="green")
-    axes[1].set_ylabel("Validation Loss", size=20)
+    axes[1].plot(training_history.epoch, training_history.val_loss, c="green", label='Validation')
+    axes[1].plot(training_history.epoch, training_history.train_loss, c="red", label='Train')
+    axes[1].set_ylabel("Loss", size=20)
     axes[1].set_xlabel("Epoch", size=20)
     axes[1].grid(which="both")
+    axes[1].legend(fontsize=15)
 
     fig = plt.gcf()
     fig.set_size_inches(15, 8)
