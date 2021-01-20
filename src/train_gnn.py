@@ -9,7 +9,7 @@ from gnn.dataloading.build_graph import build_graph_from_df
 from gnn.dataloading.loaders import load_datasets
 from gnn.model.model import create_model
 from gnn.model.trainer import Trainer
-from gnn.utils.utils import get_device, get_vocab_size
+from gnn.utils.utils import get_vocab_size
 from shared.global_constants import RES_DIR
 from shared.loaders import load_train_val_nodes
 from shared.utils import save_cli_options
@@ -75,9 +75,6 @@ def parse_arguments(args_to_parse):
         type=int,
         default=10,
         help="The number of epochs to run",
-    )
-    training.add_argument(
-        '--use-gpu', action='store_true', default=False, help='Set this parameter to run on GPU (cuda)'
     )
     training.add_argument(
         '--train-set-label-proportion',
@@ -154,7 +151,7 @@ def main(args):
     trainer = Trainer(
         model=text_gcn_model,
         learning_rate=args.lr,
-        device=get_device(args.use_gpu),
+        device='cpu',
         train_nodes=train_nodes,
         val_nodes=val_nodes,
         vocab_size=get_vocab_size(graph_dir),

@@ -1,13 +1,8 @@
 import os
-import torch
 import pandas as pd
 import matplotlib.pyplot as plt
 
 from shared.utils import rm_file, read_json_as_dict, append_to_jsonl, read_jsonl
-
-
-def get_device(use_gpu: bool) -> torch.device:
-    return torch.device("cuda" if torch.cuda.is_available() and use_gpu else "cpu")
 
 
 def remove_previous_best(directory: str, current_step: int) -> None:

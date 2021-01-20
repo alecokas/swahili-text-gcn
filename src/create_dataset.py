@@ -6,14 +6,13 @@ from pathlib import Path
 import random
 import re
 import sys
-import torch
 import urllib.request
 import zipfile
 
 from preprocessing.text_stripper import strip_tags, ignore_non_ascii
 from preprocessing.data_split import create_train_val_split
 from shared.utils import save_dict_to_json, save_cli_options
-from shared.global_constants import RES_DIR, DATA_DIR, DATA_SPLIT_DIR
+from shared.global_constants import RES_DIR, DATA_DIR
 
 
 ROOT_DOWNLOAD_URL = 'https://korp.csc.fi/download/HCS/na-v2'
