@@ -119,6 +119,7 @@ def build_graph_from_df(
             'vocab_size': len(token_to_int_vocab_map),
             'num_docs': len(document_list),
             'num_windows': num_windows,
+            'window_size': window_size,
         },
     )
 
