@@ -37,7 +37,7 @@ def build_doc2vec_from_df(
         document_list=document_list,
         stemming_map=stemming_map,
         num_epochs=num_epochs,
-        embedding_dimension=embedding_dimension,
+        vector_size=embedding_dimension,
         training_regime=training_regime,
     )
     print(f'{doc_vecs.shape[0]} documents, each with {doc_vecs.shape[1]} features')

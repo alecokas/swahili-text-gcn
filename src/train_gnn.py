@@ -112,7 +112,7 @@ def parse_arguments(args_to_parse):
 
     # Append the window size to the train and graph directory names
     args.graph_data_dir = f"{args.graph_data_dir}_w{args.window_size}"
-    args.train_dir = f"{args.train_dir}_w{args.window_size}"
+    args.train_dir = f"{args.train_dir}_w{args.window_size}_p{args.train_set_label_proportion}"
     return args
 
 
