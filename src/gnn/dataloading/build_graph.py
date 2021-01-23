@@ -120,6 +120,7 @@ def build_graph_from_df(
             'num_docs': len(document_list),
             'num_windows': num_windows,
             'window_size': window_size,
+            'num_word_coocurences': len(word_cooccurrences_list),
         },
     )
 
@@ -226,9 +227,14 @@ def _merge_into_adjacency(
     word_coocurrences = csr_matrix(
         (word_co_data, (word_co_row, word_co_col)), shape=(len(token_to_int_vocab_map), len(token_to_int_vocab_map))
     )
-    stacked_node_interactions = vstack([word_coocurrences, tf_ids])
-    zero_csr = csr_matrix(([], ([], [])), shape=(stacked_node_interactions.shape[0], tf_ids.shape[0]))
-    adj = hstack([stacked_node_interactions, zero_csr]) + identity(stacked_node_interactions.shape[0])
+    # Stack word co-occurences ontop of TF-IDF (Left hand side of adjacency)
+    adj_lhs = vstack([word_coocurrences, tf_ids])
+    # Empty (zeros) for doc-doc interactions
+    zero_csr = csr_matrix(([], ([], [])), shape=(tf_ids.shape[0], tf_ids.shape[0]))
+    # Mirror TF-IDFs and stack ontop of doc-doc interactions to create right hand side of the adjacency
+    adj_rhs = vstack([tf_ids.transpose(), zero_csr])
+    # Stack side-by-side
+    adj = hstack([adj_lhs, adj_rhs]) + identity(adj_lhs.shape[0])
 
     assert adj.shape == (
         len(token_to_int_vocab_map) + tf_ids.shape[0],
