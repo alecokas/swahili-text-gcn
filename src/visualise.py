@@ -23,7 +23,7 @@ def parse_arguments(args_to_parse):
         '--load-dir',
         type=str,
         required=True,
-        help="The name of the directory from which to load the pre-processed data (exclusing `results`)",
+        help="The name of the directory from which to load the pre-processed data (excluding `results`)",
     )
     general.add_argument(
         '--data-type',
@@ -43,7 +43,6 @@ def main(args):
     if args.data_type == 'vector':
         input_features, labels = load_vectorized_data(load_dir)
     elif args.data_type == 'doc2vec':
-        print('Here')
         input_features, labels = load_doc2vec(load_dir)
     elif args.data_type == 'fasttext':
         input_features, labels = load_avg_fasttext(load_dir)
