@@ -30,7 +30,7 @@ def save_categorical_labels(save_dir: str, labels: List[str], as_numpy: bool = F
 
 def load_train_val_nodes(
     preproc_dir: str, train_set_label_proportion: float, as_numpy: bool = False
-) -> Tuple[torch.LongTensor, torch.LongTensor]:
+) -> Tuple[torch.LongTensor, torch.LongTensor, torch.LongTensor]:
 
     print(f'Loading training subset split for label proportion {train_set_label_proportion}')
 
@@ -39,9 +39,10 @@ def load_train_val_nodes(
     subset_dir = os.path.join(preproc_dir, f"training_set_proportion_{subset_name.replace('.', '_')}")
     train_nodes = torch.load(os.path.join(subset_dir, f'train-indices-{subset_name}.pt'))
 
-    # validation set is the same regardless of the training subset used
+    # validation and test sets are the same regardless of the training subset used
     val_nodes = torch.load(os.path.join(preproc_dir, 'val-indices.pt'))
+    test_nodes = torch.load(os.path.join(preproc_dir, 'test-indices.pt'))
 
     if as_numpy:
-        return train_nodes.numpy(), val_nodes.numpy()
-    return train_nodes, val_nodes
+        return train_nodes.numpy(), val_nodes.numpy(), test_nodes.numpy()
+    return train_nodes, val_nodes, test_nodes

@@ -5,9 +5,15 @@ import matplotlib.pyplot as plt
 from shared.utils import rm_file, read_json_as_dict, append_to_jsonl, read_jsonl
 
 
-def remove_previous_best(directory: str, current_step: int) -> None:
+def remove_previous_best_model(directory: str, current_step: int) -> None:
     for item in os.listdir(directory):
         if f'model-{current_step}' not in item:
+            rm_file(os.path.join(directory, item))
+
+
+def remove_previous_best_predictions(directory: str, current_step: int) -> None:
+    for item in os.listdir(directory):
+        if f'predictions-{current_step}' not in item:
             rm_file(os.path.join(directory, item))
 
 

@@ -59,7 +59,7 @@ def parse_arguments(args_to_parse):
         '--window-size',
         type=int,
         default=20,
-        help='Select the number of tokens to use in the word co-occurence windows'
+        help='Select the number of tokens to use in the word co-occurence windows',
     )
     general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
 
@@ -143,7 +143,7 @@ def main(args):
     print('Load and normalise...')
     adjacency, input_features, labels = load_datasets(graph_dir)
 
-    train_nodes, val_nodes = load_train_val_nodes(
+    train_nodes, val_nodes, test_nodes = load_train_val_nodes(
         preproc_dir=os.path.join(RES_DIR, args.input_data_dir),
         train_set_label_proportion=args.train_set_label_proportion,
     )
@@ -165,6 +165,7 @@ def main(args):
         device='cpu',
         train_nodes=train_nodes,
         val_nodes=val_nodes,
+        test_nodes=test_nodes,
         vocab_size=get_vocab_size(graph_dir),
         results_dir=os.path.join(results_dir, args.train_dir),
         validate_every_n_epochs=2,
@@ -181,7 +182,11 @@ def main(args):
         labels=labels,
         num_epochs=args.epochs,
     )
-
+    trainer.save_test_metrics(
+        input_features=input_features,
+        adjacency=adjacency,
+        labels=labels,
+    )
     print('Complete!')
 
 

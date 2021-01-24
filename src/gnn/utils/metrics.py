@@ -6,6 +6,13 @@ from shared.utils import append_to_jsonl, rm_file
 
 
 def accuracy(output: torch.FloatTensor, labels: torch.LongTensor, is_logit_output: bool) -> float:
+    predictions = get_predictions(output, labels, is_logit_output)
+
+    num_correct = torch.sum(torch.eq(predictions.type_as(labels), labels))
+    return float(num_correct) / len(labels)
+
+
+def get_predictions(output: torch.FloatTensor, labels: torch.LongTensor, is_logit_output: bool) -> float:
     if is_logit_output:
         output = F.softmax(output, dim=-1)
     _, predictions = torch.max(output, dim=-1)
@@ -14,8 +21,7 @@ def accuracy(output: torch.FloatTensor, labels: torch.LongTensor, is_logit_outpu
         predictions.shape == labels.shape
     ), f'Predictions and labels must have the same shape. Found {predictions.shape} != {labels.shape}'
 
-    num_correct = torch.sum(torch.eq(predictions.type_as(labels), labels))
-    return float(num_correct) / len(labels)
+    return predictions
 
 
 def save_metrics(
