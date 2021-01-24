@@ -136,7 +136,7 @@ def main(args):
     else:
         raise Exception(f'Unrecognised model type: {args.model}')
 
-    train_nodes, val_nodes = load_train_val_nodes(
+    train_nodes, val_nodes, test_nodes = load_train_val_nodes(
         preproc_dir=os.path.join(RES_DIR, args.input_data_dir),
         train_set_label_proportion=args.train_set_label_proportion,
         as_numpy=True,
@@ -147,17 +147,21 @@ def main(args):
     print('Get accuracies...')
     train_predictions = classifier.predict(input_features[train_nodes, :])
     val_predictions = classifier.predict(input_features[val_nodes, :])
+    test_predictions = classifier.predict(input_features[test_nodes, :])
 
     train_accuracy = sum(train_predictions == labels[train_nodes]) / len(train_predictions)
     val_accuracy = sum(val_predictions == labels[val_nodes]) / len(val_predictions)
+    test_accuracy = sum(test_predictions == labels[test_nodes]) / len(test_predictions)
 
     print(f'Train Accuracy: {train_accuracy}')
     print(f'Validation Accuracy: {val_accuracy}')
+    print(f'Test Accuracy: {test_accuracy}')
 
     output_save_dir = os.path.join(results_dir, f'model_{args.train_set_label_proportion}')
     os.makedirs(output_save_dir, exist_ok=True)
     save_dict_to_json(
-        {'train_accuracy': train_accuracy, 'val_accuracy': val_accuracy}, os.path.join(output_save_dir, 'metric.json')
+        {'train_accuracy': train_accuracy, 'val_accuracy': val_accuracy, 'test_accuracy': test_accuracy},
+        os.path.join(output_save_dir, 'metric.json'),
     )
 
     # from sklearn.model_selection import learning_curve
