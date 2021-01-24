@@ -26,15 +26,26 @@ def create_train_val_split(
         test_size=1 - train_ratio,
         random_state=random_state,
     )
-    names = ['train-indices', 'val-indices', 'train-labels', 'val-labels']
+    val_nodes, test_nodes, val_labels, test_labels = train_test_split(
+        val_nodes,
+        val_labels,
+        stratify=val_labels,
+        test_size=0.5,
+        random_state=random_state,
+    )
 
-    assert (len(train_nodes) + len(val_nodes)) == len(
+    names = ['train-indices', 'val-indices', 'test-indices', 'train-labels', 'val-labels', 'test-labels']
+
+    assert (len(train_nodes) + len(val_nodes) + len(test_nodes)) == len(
         df
-    ), f'Not all indices are included in the split: Expected {len(train_nodes) + len(val_nodes)} == {len(df)}'
+    ), f'Not all indices are included in the split: \
+        Expected {len(train_nodes) + len(val_nodes) + len(test_nodes)} == {len(df)}'
 
-    for name, data in zip(names, [train_nodes, val_nodes, train_labels, val_labels]):
+    for name, data in zip(names, [train_nodes, val_nodes, test_nodes, train_labels, val_labels, test_labels]):
         torch.save(torch.LongTensor(data), os.path.join(results_dir, f'{name}.pt'))
-    _subset_distribution(df.label_idx.values, train_nodes, val_nodes, results_dir)
+    _subset_distribution(df.label_idx.values, train_nodes, results_dir, 'train')
+    _subset_distribution(df.label_idx.values, val_nodes, results_dir, 'val')
+    _subset_distribution(df.label_idx.values, test_nodes, results_dir, 'test')
 
     for train_set_label_proportion in train_set_label_proportions:
         subset_name = f'{train_set_label_proportion:{1:d}}'
@@ -53,16 +64,11 @@ def create_train_val_split(
         torch.save(torch.LongTensor(train_label_subset), os.path.join(subset_dir, f'train-labels-{subset_name}.pt'))
 
 
-def _subset_distribution(
-    node_labels: torch.LongTensor, train_indices: List[int], val_indices: List[int], results_dir: str
-) -> None:
+def _subset_distribution(node_labels: torch.LongTensor, node_indices: List[int], results_dir: str, name: str) -> None:
     """ Check the subset class distribution and save indices """
-    train_labels = node_labels[train_indices].tolist()
-    val_labels = node_labels[val_indices].tolist()
-    print(f'Training set split: {dict(Counter(train_labels))}')
-    print(f'Validation set split: {Counter(val_labels)}')
-    save_dict_to_json(dict(Counter(train_labels)), os.path.join(results_dir, 'train-label-dist.json'))
-    save_dict_to_json(dict(Counter(val_labels)), os.path.join(results_dir, 'val-label-dist.json'))
+    labels = node_labels[node_indices].tolist()
+    print(f'{name} set split: {dict(Counter(labels))}')
+    save_dict_to_json(dict(Counter(labels)), os.path.join(results_dir, f'{name}-label-dist.json'))
 
 
 def _save_indices(train_labels: torch.LongTensor, val_labels: torch.LongTensor, results_dir: str) -> None:
