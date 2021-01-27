@@ -1,5 +1,6 @@
 import math
 import os
+from sklearn.metrics import f1_score
 import time
 from tqdm import trange
 import torch
@@ -235,4 +236,9 @@ class Trainer(object):
 
         num_correct = float(torch.sum(torch.eq(test_predictions.type_as(test_labels), test_labels)))
         test_accuracy = num_correct / len(test_labels)
-        save_dict_to_json({'test-accuracy': test_accuracy}, os.path.join(self.results_dir, 'test-log.jsonl'))
+        test_macro_f1 = f1_score(labels[self.test_nodes], test_predictions, average='macro')
+
+        save_dict_to_json(
+            {'test-accuracy': test_accuracy, 'test_macro_f1': test_macro_f1},
+            os.path.join(self.results_dir, 'test-log.jsonl'),
+        )
