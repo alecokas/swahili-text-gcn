@@ -4,6 +4,7 @@ import numpy as np
 import os
 import random
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score
 import sys
 
 from baselines.vectorizers import build_vectorizer_from_df, load_vectorized_data
@@ -143,7 +144,7 @@ def main(args):
     )
 
     print('Train classifier ...')
-    classifier = LogisticRegression(random_state=1).fit(input_features[train_nodes, :], labels[train_nodes])
+    classifier = LogisticRegression(random_state=args.seed).fit(input_features[train_nodes, :], labels[train_nodes])
     print('Get accuracies...')
     train_predictions = classifier.predict(input_features[train_nodes, :])
     val_predictions = classifier.predict(input_features[val_nodes, :])
@@ -153,14 +154,25 @@ def main(args):
     val_accuracy = sum(val_predictions == labels[val_nodes]) / len(val_predictions)
     test_accuracy = sum(test_predictions == labels[test_nodes]) / len(test_predictions)
 
+    test_micro_f1 = f1_score(labels[test_nodes], test_predictions, average='micro')
+    test_macro_f1 = f1_score(labels[test_nodes], test_predictions, average='macro')
+
     print(f'Train Accuracy: {train_accuracy}')
     print(f'Validation Accuracy: {val_accuracy}')
     print(f'Test Accuracy: {test_accuracy}')
+    print(f'Test Micro F1: {test_micro_f1}')
+    print(f'Test Macro F1: {test_macro_f1}')
 
     output_save_dir = os.path.join(results_dir, f'model_{args.train_set_label_proportion}')
     os.makedirs(output_save_dir, exist_ok=True)
     save_dict_to_json(
-        {'train_accuracy': train_accuracy, 'val_accuracy': val_accuracy, 'test_accuracy': test_accuracy},
+        {
+            'train_accuracy': train_accuracy,
+            'val_accuracy': val_accuracy,
+            'test_accuracy': test_accuracy,
+            'test_micro_f1': test_micro_f1,
+            'test_macro_f1': test_macro_f1,
+        },
         os.path.join(output_save_dir, 'metric.json'),
     )
 
