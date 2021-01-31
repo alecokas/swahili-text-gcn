@@ -55,7 +55,7 @@ def plot_training_prop(df: pd.DataFrame, plot_dir: str = '', metric: str = 'f1')
         y = training_prop_stats[metric]['mean'].loc[model]
         std = training_prop_stats[metric]['std'].loc[model]
         x = training_prop_stats.loc[model].index
-        _ = plt.errorbar(x, y, std, c=color, marker=marker, label=model, fmt='o', capsize=5)
+        _ = plt.errorbar(x, y, std, c=color, marker=marker, label=model, capsize=5)
 
     ax, fig = plt.gca(), plt.gcf()
 
