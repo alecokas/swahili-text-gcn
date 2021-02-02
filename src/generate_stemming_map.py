@@ -49,8 +49,8 @@ def parse_arguments(args_to_parse):
     general.add_argument(
         "--results-dir",
         type=str,
-        default="gnn_results",
-        help="Location of gnn results",
+        default="output-dictionary",
+        help="Output location of the processing, stemming, etc. results",
     )
     general.add_argument(
         "--input-data-dir",
