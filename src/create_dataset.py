@@ -29,7 +29,7 @@ def parse_arguments(args_to_parse):
     general.add_argument(
         '--dataset-name',
         type=str,
-        default='hsc',
+        default='z-news',
         choices=['hsc', 'z-news'],
         help="Select which raw dataset to use: Helsinki Swahili Corpus or Zenodo Swahili News",
     )
