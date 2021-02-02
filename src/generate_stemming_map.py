@@ -26,7 +26,7 @@ from preprocessing.stemming import create_stemming_map, remove_stemming_entries_
 
 def parse_arguments(args_to_parse):
     """ Parse CLI arguments """
-    descr = "Download stemmed versions of word in vocab"
+    descr = "Download stemmed versions of word in vocab and apply cleaning / processing "
     parser = argparse.ArgumentParser(description=descr)
 
     general = parser.add_argument_group("General settings")
