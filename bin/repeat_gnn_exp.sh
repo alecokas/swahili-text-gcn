@@ -12,7 +12,7 @@ label_proportion=$7
 window_size=$8
 input_features=$9
 
-for seed in 12321 19291 48911 1403 1912
+for seed in 12321 42 300 400 500
 do 
     python src/train_gnn.py "$name"_repeat_gnn_exp --input-data-dir "$input_data_dir" --input-features "$input_features" \
     --stemmer-path "$stemmer_path" --train-dir train_"$seed" --epochs $epochs --lr $lr --dropout-ratio $dropout_ratio \

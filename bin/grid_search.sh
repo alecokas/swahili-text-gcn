@@ -11,7 +11,7 @@ window_size=$6
 
 for dropout_ratio in 0.3 0.5
 do 
-    for lr in 0.002
+    for lr in 0.02
     do 
         python src/train_gnn.py "$name"_grid_search --train-dir train_lr_"$lr"_dropout_"$dropout_ratio" --input-data-dir "$input_data_dir" \
         --input-features one-hot --stemmer-path "$stemmer_path" --epochs $epochs --lr $lr --dropout-ratio $dropout_ratio \
