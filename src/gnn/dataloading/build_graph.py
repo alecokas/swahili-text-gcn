@@ -28,6 +28,8 @@ def build_graph_from_df(
     text_column: str,
     label_column: str,
     window_size: int,
+    wv_sg: int = 1,
+    pv_dm: int = 1,
 ) -> None:
     check_df_and_stemming_paths(df_path, stemming_map_path)
     stemming_map = read_json_as_dict(stemming_map_path)
@@ -88,7 +90,7 @@ def build_graph_from_df(
             stemming_map=stemming_map,
             num_epochs=20,
             vector_size=300,
-            training_regime=1,
+            training_regime=pv_dm,
         )
         word2vec_model = train_word2vec(
             save_dir=graph_dir,
@@ -96,7 +98,7 @@ def build_graph_from_df(
             stemming_map=stemming_map,
             num_epochs=20,
             embedding_dimension=300,
-            training_regime=1,
+            training_regime=wv_sg,
         )
         input_word_features = infer_word2vec_embeddings(word2vec_model, word_list)
         del word2vec_model
