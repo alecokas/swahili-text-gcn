@@ -61,6 +61,20 @@ def parse_arguments(args_to_parse):
         default=20,
         help='Select the number of tokens to use in the word co-occurence windows',
     )
+    general.add_argument(
+        '--wv-sg',
+        type=int,
+        default=1,
+        choices=[0, 1],
+        help='Select whether word2vec will use skip-gram (1) or CBOW (0)',
+    )
+    general.add_argument(
+        '--pv-dm',
+        type=int,
+        default=1,
+        choices=[0, 1],
+        help='Select whether doc2vec will use DM (1) or DBOW (0)',
+    )
     general.add_argument("--seed", type=int, default=12321, help='Random seed for reproducability')
 
     training = parser.add_argument_group('Training settings')
@@ -138,6 +152,8 @@ def main(args):
             text_column='document_content',
             label_column='document_type',
             window_size=args.window_size,
+            wv_sg=args.wv_sg,
+            pv_dm=args.pv_dm,
         )
 
     print('Load and normalise...')
