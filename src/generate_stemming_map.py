@@ -1,32 +1,32 @@
 import argparse
-import os
-import sys
-
-import requests
-import jsonlines
-import json
-from tqdm import tqdm
-from bs4 import BeautifulSoup
-from typing import Dict, List, Optional
-from sklearn.feature_extraction.text import CountVectorizer
 from collections import Counter
+import json
+import os
+from sklearn.feature_extraction.text import CountVectorizer
+import sys
+from typing import Dict, Optional
 
 from shared.global_constants import RES_DIR
 from shared.loaders import load_text_and_labels
+from preprocessing.stemming import (
+    create_stemming_map,
+    remove_stemming_entries_below_count_threshold,
+    add_words_to_map,
+    get_new_words_to_add,
+    get_all_completed_words,
+)
 from shared.utils import (
-    append_to_jsonl,
     save_dict_to_json,
     read_json_as_dict,
     tokenize_prune,
     tokenize_prune_stem,
     save_cli_options,
 )
-from preprocessing.stemming import create_stemming_map, remove_stemming_entries_below_count_threshold
 
 
 def parse_arguments(args_to_parse):
     """ Parse CLI arguments """
-    descr = "Download stemmed versions of word in vocab"
+    descr = "Download stemmed versions of word in vocab and apply cleaning / processing "
     parser = argparse.ArgumentParser(description=descr)
 
     general = parser.add_argument_group("General settings")
@@ -49,8 +49,8 @@ def parse_arguments(args_to_parse):
     general.add_argument(
         "--results-dir",
         type=str,
-        default="gnn_results",
-        help="Location of gnn results",
+        default="output-dictionary",
+        help="Output location of the processing, stemming, etc. results",
     )
     general.add_argument(
         "--input-data-dir",
@@ -109,56 +109,6 @@ def load_vocab_counts(vocab_counts_path: str) -> dict:
     return vocab_counts
 
 
-def get_done_words(stemming_download_path: str) -> set:
-    done_words = set()
-    if os.path.exists(stemming_download_path):
-        with jsonlines.open(stemming_download_path) as reader:
-            for obj in reader:
-                done_words.add(obj["word"])
-    return done_words
-
-
-def get_words_to_add(vocab_counts: dict, done_words: set, number_to_add: int, count_threshold: int) -> List[str]:
-    words_above_threshold = [word for word, count in vocab_counts.items() if count >= count_threshold]
-    words_to_add = [word for word in words_above_threshold if word not in done_words][:number_to_add]
-    return words_above_threshold, words_to_add
-
-
-def add_words(words_to_add: List[str], stemming_download_path: str) -> None:
-    if len(words_to_add) == 0:
-        print("All stemming data downloaded")
-        return
-    for word in tqdm(words_to_add):
-        query_word(stemming_download_path, word)
-
-
-def extract_stem(text: str) -> str:
-    return text.split("[")[1].split("]")[0]
-
-
-def query_word(stemming_download_path: str, word: str) -> None:
-    query_data = {}
-    query_data["word"] = word
-    try:
-        base_url = "http://77.240.23.241/dictionary"
-        url = f"{base_url}/{word}/1"
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
-        box = soup.find(class_="brown-box")
-        if box is None:
-            query_data["box_text"] = ""
-            query_data["stem"] = ""
-        else:
-            query_data["box_text"] = box.text
-            query_data["stem"] = extract_stem(box.text)
-        query_data["status"] = 1
-    except Exception as exception:
-        query_data["exception"] = str(exception)
-        query_data["status"] = 0
-        print(f"Exception of type {str(exception)} for word {word}")
-    append_to_jsonl(stemming_download_path, query_data)
-
-
 def main(args):
     """ Entry point for generating a clean stemming map """
     results_dir = os.path.join(RES_DIR, args.results_dir)
@@ -175,16 +125,16 @@ def main(args):
         create_vocab_counts(df_path=df_path, vocab_counts_path=vocab_counts_path)
     vocab_counts = load_vocab_counts(vocab_counts_path)
 
-    done_words = get_done_words(stemming_download_path)
+    done_words = get_all_completed_words(stemming_download_path)
 
-    words_above_threshold, words_to_add = get_words_to_add(
+    words_above_threshold, words_to_add = get_new_words_to_add(
         vocab_counts, done_words, args.number_to_add, args.count_threshold
     )
 
     print(f'Number of words to add: {len(words_to_add)}')
     if len(words_to_add) > 0:
         print(f"{len(done_words)} words done out of {len(words_above_threshold)} words in vocab above count threshold")
-        add_words(words_to_add, stemming_download_path)
+        add_words_to_map(words_to_add, stemming_download_path)
     else:
         # Convert the raw data into a cleaned stemming mapp
         create_stemming_map(stemming_download_path, stemming_cleaned_path)
