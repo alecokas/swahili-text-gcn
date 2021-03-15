@@ -28,11 +28,11 @@ python src/generate_stemming_map.py \
 This gives us our cleaned stemming map and vocabulary counts as the main outputs.
 
 ## Train baseline models
-A number of baseline models are set up to be trained out-the-box. They all use a feature generation stage followed by a logistic regression classifier. Here's an excerpt from our paper with the baseline models trained on 20% of the training set labels alongside their accuracy and F1 score:
+A number of baseline models are set up to be trained out-the-box. They all use a feature generation stage followed by a logistic regression classifier. Here's an excerpt from our paper where a set of baseline models are compared to two Text GCN variants. For more details, see Table 2 in our paper.
 
 <img src="res/table-comparison.png" width="400">
 
-To train any of these models, simply use the following:
+To train any of these baseline models, simply use the following:
 ```code
 python src/train_baseline.py <BASELINE_RESULTS_DIR> \
     --input-data-dir <DOWNLOADED_DATA_DIR_NAME> \
@@ -41,9 +41,10 @@ python src/train_baseline.py <BASELINE_RESULTS_DIR> \
 ```
 
 ## Train Text GCN models
-There are two Text GCN variant models which can be trained: the vanilla `Text GCN` and `Text GCN-t2v`. You can refer to the figure below for a comparison of these models to selected baseline models as the proportion of training labels is varied.
+There are two Text GCN variant models which can be trained: the vanilla `Text GCN` and `Text GCN-t2v`. You can refer to the figure below for a comparison of these models to selected baseline models as the proportion of training labels is varied. See figure 3 in our paper for full details.
 
-**TODO**
+<img src="res/varying-label-proportion.png" width="400">
+
 
 To train a GCN model, run:
 ```code
