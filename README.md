@@ -30,7 +30,7 @@ This gives us our cleaned stemming map and vocabulary counts as the main outputs
 ## Train baseline models
 A number of baseline models are set up to be trained out-the-box. They all use a feature generation stage followed by a logistic regression classifier. Here's an excerpt from our paper with the baseline model alongside their accuracy and F1 score:
 
-![Comparison of the mean and standard deviation test set accuracy and F1 scores for all models.](res/table-comparison.png){:height="10%" width="10%"}
+<img src="res/table-comparison.png" width="400">
 
 To train any of these models, simply use the following:
 ```code
