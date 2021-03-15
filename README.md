@@ -28,7 +28,7 @@ python src/generate_stemming_map.py \
 This gives us our cleaned stemming map and vocabulary counts as the main outputs.
 
 ## Train baseline models
-A number of baseline models are set up to be trained out-the-box. They all use a feature generation stage followed by a logistic regression classifier. Here's an excerpt from our paper with the baseline model alongside their accuracy and F1 score:
+A number of baseline models are set up to be trained out-the-box. They all use a feature generation stage followed by a logistic regression classifier. Here's an excerpt from our paper with the baseline models trained on 20% of the training set labels alongside their accuracy and F1 score:
 
 <img src="res/table-comparison.png" width="400">
 
