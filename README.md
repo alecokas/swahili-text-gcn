@@ -1,6 +1,9 @@
-# Swahili News Classification
-### Comparing traditional NLP techniques to Text GCN
+## Comparing traditional NLP techniques to Graph Convolutional Network for Swahili News Classification
+This work empirically demonstrates the ability of Text Graph Convolutional Network (Text GCN) to outperform traditional natural language processing benchmarks for the task of semi-supervised Swahili news classification. In particular, we focus our experimentation on the sparsely-labelled semi-supervised context which is representative of the practical constraints facing low-resourced African languages. We follow up on this result by introducing a variant of the Text GCN model which utilises a bag of words embedding rather than a naive one-hot encoding to reduce the memory footprint of Text GCN whilst demonstrating similar predictive performance.
 
+This repo contains the code used to generate the experimental results presented in:
+> 
+**TODO**
 
 ## Prerequisites
 This project is compatible with Python >= 3.6.9. Install the full list of dependencies in your virtual environemnt by running:
@@ -27,7 +30,7 @@ This gives us our cleaned stemming map and vocabulary counts as the main outputs
 ## Train baseline models
 A number of baseline models are set up to be trained out-the-box. They all use a feature generation stage followed by a logistic regression classifier. Here's an excerpt from our paper with the baseline model alongside their accuracy and F1 score:
 
-**TODO**
+![Comparison of the mean and standard deviation test set accuracy and F1 scores for all models.](res/table-comparison.png){:height="10%" width="10%"}
 
 To train any of these models, simply use the following:
 ```code
