@@ -9,7 +9,13 @@ This project is compatible with Python >= 3.6.9. Install the full list of depend
 ```code
 pip install -r requirements.txt
 ```
-NOTE: This repo was developed (and will continue to be maintained) exclusively for Linux and Mac.
+NOTE: This repo was developed (and will continue to be maintained) exclusively for Linux and Mac. The exact package versions are valid for Python 3.6.9.
+
+Before you get started, open a Python prompt from your virtual environment and run the following to download the `punkt` data:
+```Python
+>>> import nltk
+>>> nltk.download('punkt')
+```
 
 ## Download the data
 The raw dataset can be downloaded, preprocessed, and organised into a DataFrame by running the following command:
