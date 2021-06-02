@@ -1,8 +1,9 @@
 ## Comparing traditional NLP techniques to Graph Convolutional Network for Swahili News Classification
 This work empirically demonstrates the ability of Text Graph Convolutional Network (Text GCN) to outperform traditional natural language processing benchmarks for the task of semi-supervised Swahili news classification. In particular, we focus our experimentation on the sparsely-labelled semi-supervised context which is representative of the practical constraints facing low-resourced African languages. We follow up on this result by introducing a variant of the Text GCN model which utilises a bag of words embedding rather than a naive one-hot encoding to reduce the memory footprint of Text GCN whilst demonstrating similar predictive performance.
 
-This repo contains the code used to generate the experimental results presented in:
->  Alexandros Kastanos and Tyler Martin, [**Graph Convolutional Network for Swahili News Classification**](https://arxiv.org/abs/2103.09325), European Chapter of the Association for Computational Linguistics, AfricaNLP, 2021
+This repo contains the code used to generate the experimental results presented in the following two papers:
+-  Alexandros Kastanos and Tyler Martin, [**Graph Convolutional Network for Swahili News Classification**](https://arxiv.org/abs/2103.09325), European Chapter of the Association for Computational Linguistics, AfricaNLP, 2021
+-  Alexandros Kastanos and Tyler Martin, [**Graph Convolutional Network for Swahili News Classification**](https://sigtyp.io/workshops/2021/abstracts/13.pdf), North American Chapter of the Association for Computational Linguistics, SIGTYP, 2021
 
 ## Prerequisites
 This project is compatible with Python >= 3.6.9. Install the full list of dependencies in your virtual environemnt by running:
